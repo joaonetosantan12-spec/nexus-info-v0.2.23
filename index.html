@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Boletim Escolar</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color:white;
+}
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:30px;
+}
+.box{
+    background:rgba(0,0,0,0.45);
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:20px;
+}
+input, select, button{
+    width:100%;
+    padding:8px;
+    margin:4px 0;
+    border:none;
+    border-radius:6px;
+}
+button{
+    background:#00c6ff;
+    font-weight:bold;
+    cursor:pointer;
+}
+button:hover{background:#0072ff;}
+.hidden{display:none;}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:10px;
+}
+th,td{
+    border:1px solid rgba(255,255,255,0.2);
+    padding:6px;
+    text-align:center;
+}
+th{background:rgba(0,0,0,0.4);}
+
+/* 🔴 NOTA BAIXA */
+.reprovado{
+    color:#ff4d4d;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- LOGIN -->
+<div class="box" id="loginBox">
+<h2>Login</h2>
+<input id="loginUser" placeholder="Usuário">
+<input id="loginPass" type="password" placeholder="Senha">
+<button onclick="login()">Entrar</button>
+<button onclick="showRegister()">Criar conta</button>
+</div>
+
+<!-- REGISTRO -->
+<div class="box hidden" id="registerBox">
+<h2>Criar conta</h2>
+<input id="regUser" placeholder="Usuário">
+<input id="regPass" type="password" placeholder="Senha">
+<button onclick="register()">Registrar</button>
+<button onclick="backLogin()">Voltar</button>
+</div>
+
+<!-- SISTEMA -->
+<div class="hidden" id="siteBox">
+
+<h2>📘 Boletim Escolar</h2>
+
+<!-- ADMIN -->
+<div class="box hidden" id="adminBox">
+<h3>Administrador</h3>
+
+<select id="bimestreAdmin">
+<option value="1">1º Bimestre</option>
+<option value="2">2º Bimestre</option>
+<option value="3">3º Bimestre</option>
+<option value="4">4º Bimestre</option>
+</select>
+
+<div id="userList"></div>
+<h4 id="selectedUser"></h4>
+
+<div id="materiasInputs"></div>
+
+<button onclick="salvarNotas()">Salvar notas</button>
+</div>
+
+<!-- ALUNO -->
+<div class="box hidden" id="userBox">
+<h3 id="userName"></h3>
+<div id="boletimAluno"></div>
+<h3>Média Final Geral: <span id="mediaFinal">--</span></h3>
+<button onclick="baixarPDF()">📄 Baixar Boletim em PDF</button>
+</div>
+
+<button onclick="logout()">Sair</button>
+
+</div>
+
+<script>
+const ADMIN_USER="Joaonetosantana";
+const ADMIN_PASS="131210";
+
+const materias=[
+"Português","Matemática","Ciências",
+"História","Geografia","Inglês","Educação Física"
+];
+
+let currentUser="";
+let isAdmin=false;
+let selectedAluno="";
+
+function showRegister(){loginBox.classList.add("hidden");registerBox.classList.remove("hidden");}
+function backLogin(){registerBox.classList.add("hidden");loginBox.classList.remove("hidden");}
+
+function register(){
+if(!regUser.value||!regPass.value) return alert("Preencha tudo");
+localStorage.setItem("user_"+regUser.value,regPass.value);
+alert("Conta criada!");
+backLogin();
+}
+
+function login(){
+if(loginUser.value===ADMIN_USER && loginPass.value===ADMIN_PASS){
+enter(true,loginUser.value);
+}else if(localStorage.getItem("user_"+loginUser.value)===loginPass.value){
+enter(false,loginUser.value);
+}else alert("Login inválido");
+}
+
+function enter(admin,user){
+isAdmin=admin;
+currentUser=user;
+loginBox.classList.add("hidden");
+registerBox.classList.add("hidden");
+siteBox.classList.remove("hidden");
+isAdmin?loadAdmin():loadAluno();
+}
+
+function logout(){location.reload();}
+
+function loadAdmin(){
+adminBox.classList.remove("hidden");
+userBox.classList.add("hidden");
+
+materiasInputs.innerHTML="";
+materias.forEach(m=>{
+materiasInputs.innerHTML+=`
+<h4>${m}</h4>
+<input type="number" id="${m}_red" placeholder="Redação (0–10)">
+<input type="number" id="${m}_sim" placeholder="Simulado (0–10)">
+<input type="number" id="${m}_atv" placeholder="Atividades (0–2)">
+<input type="number" id="${m}_prova" placeholder="Prova (0–8)">
+`;
+});
+
+userList.innerHTML="";
+Object.keys(localStorage).filter(k=>k.startsWith("user_")).forEach(u=>{
+const nome=u.replace("user_","");
+const b=document.createElement("button");
+b.innerText=nome;
+b.onclick=()=>selectAluno(nome);
+userList.appendChild(b);
+});
+}
+
+function selectAluno(u){
+selectedAluno=u;
+selectedUser.innerText="Aluno: "+u;
+}
+
+function salvarNotas(){
+const bim=bimestreAdmin.value;
+const data=JSON.parse(localStorage.getItem("boletim_"+selectedAluno)||"{}");
+data[bim]=data[bim]||{};
+let somaBim=0,contBim=0;
+
+materias.forEach(m=>{
+const r=+document.getElementById(m+"_red").value || 0;
+const s=+document.getElementById(m+"_sim").value || 0;
+const a=+document.getElementById(m+"_atv").value || 0;
+const p=+document.getElementById(m+"_prova").value || 0;
+
+if(r||s||a||p){
+const media=((r+s+a+p)/3).toFixed(2);
+data[bim][m]={red:r,sim:s,atv:a,prova:p,media};
+somaBim+=+media;
+contBim++;
+}
+});
+
+data[bim].mediaBimestre=contBim?(somaBim/contBim).toFixed(2):"--";
+localStorage.setItem("boletim_"+selectedAluno,JSON.stringify(data));
+alert("Notas salvas!");
+}
+
+function notaHTML(valor){
+if(valor==="--") return "--";
+return `<span class="${valor<6?'reprovado':''}">${valor}</span>`;
+}
+
+function loadAluno(){
+adminBox.classList.add("hidden");
+userBox.classList.remove("hidden");
+userName.innerText="Aluno: "+currentUser;
+
+const data=JSON.parse(localStorage.getItem("boletim_"+currentUser)||"{}");
+let html="";
+let somaFinal=0,contFinal=0;
+
+for(let b=1;b<=4;b++){
+html+=`<h3>${b}º Bimestre</h3><table>
+<tr><th>Matéria</th><th>Red</th><th>Sim</th><th>Atv</th><th>Prova</th><th>Média</th></tr>`;
+
+materias.forEach(m=>{
+const d=data[b]?.[m];
+html+=`
+<tr>
+<td>${m}</td>
+<td>${d?.red ?? "--"}</td>
+<td>${d?.sim ?? "--"}</td>
+<td>${d?.atv ?? "--"}</td>
+<td>${d?.prova ?? "--"}</td>
+<td>${notaHTML(d?.media ?? "--")}</td>
+</tr>`;
+});
+
+const mb=data[b]?.mediaBimestre ?? "--";
+html+=`<tr><th colspan="5">Média do Bimestre</th><th>${notaHTML(mb)}</th></tr></table>`;
+if(mb!=="--"){somaFinal+=+mb;contFinal++;}
+}
+
+boletimAluno.innerHTML=html;
+mediaFinal.innerHTML=notaHTML(contFinal?(somaFinal/contFinal).toFixed(2):"--");
+}
+</script>
+
+</body>
+</html>
