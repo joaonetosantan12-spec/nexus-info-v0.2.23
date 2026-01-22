@@ -2,68 +2,33 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Boletim Escolar</title>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<title>Portal Escolar</title>
 
 <style>
 body{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-    color:white;
+margin:0;
+font-family:Arial, sans-serif;
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+color:white;
 }
-.container{
-    max-width:1200px;
-    margin:auto;
-    padding:30px;
-}
-.box{
-    background:rgba(0,0,0,0.45);
-    padding:20px;
-    border-radius:10px;
-    margin-bottom:20px;
-}
-input, select, button{
-    width:100%;
-    padding:8px;
-    margin:4px 0;
-    border:none;
-    border-radius:6px;
-}
-button{
-    background:#00c6ff;
-    font-weight:bold;
-    cursor:pointer;
-}
+.container{max-width:1200px;margin:auto;padding:30px;}
+.box{background:rgba(0,0,0,0.45);padding:20px;border-radius:10px;margin-bottom:20px;}
+input,select,button,textarea{width:100%;padding:8px;margin:4px 0;border:none;border-radius:6px;}
+button{background:#00c6ff;font-weight:bold;cursor:pointer;}
 button:hover{background:#0072ff;}
 .hidden{display:none;}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:10px;
-}
-th,td{
-    border:1px solid rgba(255,255,255,0.2);
-    padding:6px;
-    text-align:center;
-}
+table{width:100%;border-collapse:collapse;margin-top:10px;}
+th,td{border:1px solid rgba(255,255,255,0.2);padding:6px;text-align:center;}
 th{background:rgba(0,0,0,0.4);}
-
-/* 🔴 NOTA BAIXA */
-.reprovado{
-    color:#ff4d4d;
-    font-weight:bold;
-}
+.reprovado{color:#ff4d4d;font-weight:bold;}
+.ouro{color:gold;font-weight:bold;}
+.prata{color:silver;font-weight:bold;}
 </style>
 </head>
 
 <body>
-
 <div class="container">
 
-<!-- LOGIN -->
 <div class="box" id="loginBox">
 <h2>Login</h2>
 <input id="loginUser" placeholder="Usuário">
@@ -72,25 +37,21 @@ th{background:rgba(0,0,0,0.4);}
 <button onclick="showRegister()">Criar conta</button>
 </div>
 
-<!-- REGISTRO -->
 <div class="box hidden" id="registerBox">
 <h2>Criar conta</h2>
-<input id="regUser" placeholder="Usuário">
-<input id="regPass" type="password" placeholder="Senha">
+<input id="regUser">
+<input id="regPass" type="password">
 <button onclick="register()">Registrar</button>
 <button onclick="backLogin()">Voltar</button>
 </div>
 
-<!-- SISTEMA -->
 <div class="hidden" id="siteBox">
+<h2>📘 Portal Escolar</h2>
 
-<h2>📘 Boletim Escolar</h2>
-
-<!-- ADMIN -->
 <div class="box hidden" id="adminBox">
 <h3>Administrador</h3>
 
-<select id="bimestreAdmin">
+<select id="bimestreAdmin" onchange="carregarNotas()">
 <option value="1">1º Bimestre</option>
 <option value="2">2º Bimestre</option>
 <option value="3">3º Bimestre</option>
@@ -99,21 +60,32 @@ th{background:rgba(0,0,0,0.4);}
 
 <div id="userList"></div>
 <h4 id="selectedUser"></h4>
+<h4>Média Geral do Aluno: <span id="mediaAlunoAdmin">--</span></h4>
+
+<h4>📋 Chamada</h4>
+<select id="presenca">
+<option value="Presente">Presente</option>
+<option value="Falta">Falta</option>
+</select>
 
 <div id="materiasInputs"></div>
+<button onclick="salvarNotas()">Salvar / Atualizar</button>
 
-<button onclick="salvarNotas()">Salvar notas</button>
+<hr>
+<h3>📉 Alunos em Recuperação</h3>
+<div id="recuperacaoAdmin"></div>
+
+<hr>
+<h3>🏆 Ranking Final (Admin)</h3>
+<div id="ranking"></div>
 </div>
 
-<!-- ALUNO -->
 <div class="box hidden" id="userBox">
 <h3 id="userName"></h3>
 <div id="boletimAluno"></div>
 <h3>Média Final Geral: <span id="mediaFinal">--</span></h3>
-<button onclick="baixarPDF()">📄 Baixar Boletim em PDF</button>
-</div>
-
 <button onclick="logout()">Sair</button>
+</div>
 
 </div>
 
@@ -121,40 +93,31 @@ th{background:rgba(0,0,0,0.4);}
 const ADMIN_USER="Joaonetosantana";
 const ADMIN_PASS="131210";
 
-const materias=[
-"Português","Matemática","Ciências",
-"História","Geografia","Inglês","Educação Física"
-];
+const materias=["Português","Matemática","Ciências","História","Geografia","Inglês","Educação Física"];
 
-let currentUser="";
-let isAdmin=false;
-let selectedAluno="";
+let currentUser="",isAdmin=false,selectedAluno="";
 
 function showRegister(){loginBox.classList.add("hidden");registerBox.classList.remove("hidden");}
 function backLogin(){registerBox.classList.add("hidden");loginBox.classList.remove("hidden");}
 
 function register(){
-if(!regUser.value||!regPass.value) return alert("Preencha tudo");
 localStorage.setItem("user_"+regUser.value,regPass.value);
 alert("Conta criada!");
 backLogin();
 }
 
 function login(){
-if(loginUser.value===ADMIN_USER && loginPass.value===ADMIN_PASS){
-enter(true,loginUser.value);
-}else if(localStorage.getItem("user_"+loginUser.value)===loginPass.value){
-enter(false,loginUser.value);
-}else alert("Login inválido");
+if(loginUser.value===ADMIN_USER && loginPass.value===ADMIN_PASS) enter(true,loginUser.value);
+else if(localStorage.getItem("user_"+loginUser.value)===loginPass.value) enter(false,loginUser.value);
+else alert("Login inválido");
 }
 
-function enter(admin,user){
-isAdmin=admin;
-currentUser=user;
+function enter(a,u){
+isAdmin=a; currentUser=u;
 loginBox.classList.add("hidden");
 registerBox.classList.add("hidden");
 siteBox.classList.remove("hidden");
-isAdmin?loadAdmin():loadAluno();
+a?loadAdmin():loadAluno();
 }
 
 function logout(){location.reload();}
@@ -167,56 +130,91 @@ materiasInputs.innerHTML="";
 materias.forEach(m=>{
 materiasInputs.innerHTML+=`
 <h4>${m}</h4>
-<input type="number" id="${m}_red" placeholder="Redação (0–10)">
-<input type="number" id="${m}_sim" placeholder="Simulado (0–10)">
-<input type="number" id="${m}_atv" placeholder="Atividades (0–2)">
-<input type="number" id="${m}_prova" placeholder="Prova (0–8)">
+<input id="${m}_red" type="number" placeholder="Redação">
+<input id="${m}_sim" type="number" placeholder="Simulado">
+<input id="${m}_atv" type="number" placeholder="Atividades">
+<input id="${m}_prova" type="number" placeholder="Prova">
 `;
 });
 
 userList.innerHTML="";
 Object.keys(localStorage).filter(k=>k.startsWith("user_")).forEach(u=>{
-const nome=u.replace("user_","");
-const b=document.createElement("button");
-b.innerText=nome;
-b.onclick=()=>selectAluno(nome);
+let n=u.replace("user_","");
+let b=document.createElement("button");
+b.innerText=n;
+b.onclick=()=>{selectedAluno=n;selectedUser.innerText="Aluno: "+n;carregarNotas();};
 userList.appendChild(b);
 });
+
+gerarRanking();
+gerarRecuperacao();
 }
 
-function selectAluno(u){
-selectedAluno=u;
-selectedUser.innerText="Aluno: "+u;
+function carregarNotas(){
+if(!selectedAluno) return;
+let d=JSON.parse(localStorage.getItem("boletim_"+selectedAluno)||"{}");
+let b=bimestreAdmin.value;
+presenca.value=d[b]?.presenca||"Presente";
+
+let soma=0,cont=0;
+for(let i=1;i<=4;i++){
+if(d[i]?.mediaBimestre){soma+=+d[i].mediaBimestre;cont++;}
+}
+mediaAlunoAdmin.innerText=cont?(soma/cont).toFixed(2):"--";
+
+materias.forEach(m=>{
+let x=d[b]?.[m];
+document.getElementById(m+"_red").value=x?.red||"";
+document.getElementById(m+"_sim").value=x?.sim||"";
+document.getElementById(m+"_atv").value=x?.atv||"";
+document.getElementById(m+"_prova").value=x?.prova||"";
+});
 }
 
 function salvarNotas(){
-const bim=bimestreAdmin.value;
-const data=JSON.parse(localStorage.getItem("boletim_"+selectedAluno)||"{}");
-data[bim]=data[bim]||{};
-let somaBim=0,contBim=0;
+let b=bimestreAdmin.value;
+let d=JSON.parse(localStorage.getItem("boletim_"+selectedAluno)||"{}");
+d[b]={presenca:presenca.value};
+let soma=0,cont=0;
 
 materias.forEach(m=>{
-const r=+document.getElementById(m+"_red").value || 0;
-const s=+document.getElementById(m+"_sim").value || 0;
-const a=+document.getElementById(m+"_atv").value || 0;
-const p=+document.getElementById(m+"_prova").value || 0;
-
+let r=+document.getElementById(m+"_red").value||0;
+let s=+document.getElementById(m+"_sim").value||0;
+let a=+document.getElementById(m+"_atv").value||0;
+let p=+document.getElementById(m+"_prova").value||0;
 if(r||s||a||p){
-const media=((r+s+a+p)/3).toFixed(2);
-data[bim][m]={red:r,sim:s,atv:a,prova:p,media};
-somaBim+=+media;
-contBim++;
+let media=((r+s+a+p)/3).toFixed(2);
+d[b][m]={red:r,sim:s,atv:a,prova:p,media};
+soma+=+media; cont++;
 }
 });
 
-data[bim].mediaBimestre=contBim?(somaBim/contBim).toFixed(2):"--";
-localStorage.setItem("boletim_"+selectedAluno,JSON.stringify(data));
+d[b].mediaBimestre=cont?(soma/cont).toFixed(2):"--";
+localStorage.setItem("boletim_"+selectedAluno,JSON.stringify(d));
 alert("Notas salvas!");
+gerarRanking();
+gerarRecuperacao();
 }
 
-function notaHTML(valor){
-if(valor==="--") return "--";
-return `<span class="${valor<6?'reprovado':''}">${valor}</span>`;
+function gerarRecuperacao(){
+let html="";
+Object.keys(localStorage).filter(k=>k.startsWith("user_")).forEach(u=>{
+let nome=u.replace("user_","");
+let d=JSON.parse(localStorage.getItem("boletim_"+nome)||"{}");
+let rec=[];
+for(let b=1;b<=4;b++){
+materias.forEach(m=>{
+if(d[b]?.[m]?.media<6 && !rec.includes(m)) rec.push(m);
+});
+}
+if(rec.length) html+=`<p><b>${nome}</b>: ${rec.join(", ")}</p>`;
+});
+recuperacaoAdmin.innerHTML=html||"Nenhum aluno em recuperação 🎉";
+}
+
+function notaHTML(v){
+if(v==="--") return "--";
+return `<span class="${v<6?'reprovado':''}">${v}</span>`;
 }
 
 function loadAluno(){
@@ -224,36 +222,54 @@ adminBox.classList.add("hidden");
 userBox.classList.remove("hidden");
 userName.innerText="Aluno: "+currentUser;
 
-const data=JSON.parse(localStorage.getItem("boletim_"+currentUser)||"{}");
-let html="";
-let somaFinal=0,contFinal=0;
+let d=JSON.parse(localStorage.getItem("boletim_"+currentUser)||"{}");
+let html="",sf=0,cf=0;
 
 for(let b=1;b<=4;b++){
-html+=`<h3>${b}º Bimestre</h3><table>
+let mb=d[b]?.mediaBimestre||"--";
+let alamar=mb>=9?'<span class="ouro">🏅 Ouro</span>':mb>=8?'<span class="prata">🥈 Prata</span>':"";
+html+=`<h3>${b}º Bimestre ${alamar}</h3>
+<p>📋 Chamada: ${d[b]?.presenca||"--"}</p>
+<table>
 <tr><th>Matéria</th><th>Red</th><th>Sim</th><th>Atv</th><th>Prova</th><th>Média</th></tr>`;
 
 materias.forEach(m=>{
-const d=data[b]?.[m];
+let x=d[b]?.[m];
 html+=`
 <tr>
 <td>${m}</td>
-<td>${d?.red ?? "--"}</td>
-<td>${d?.sim ?? "--"}</td>
-<td>${d?.atv ?? "--"}</td>
-<td>${d?.prova ?? "--"}</td>
-<td>${notaHTML(d?.media ?? "--")}</td>
+<td>${x?.red??"--"}</td>
+<td>${x?.sim??"--"}</td>
+<td>${x?.atv??"--"}</td>
+<td>${x?.prova??"--"}</td>
+<td>${notaHTML(x?.media??"--")}</td>
 </tr>`;
 });
 
-const mb=data[b]?.mediaBimestre ?? "--";
 html+=`<tr><th colspan="5">Média do Bimestre</th><th>${notaHTML(mb)}</th></tr></table>`;
-if(mb!=="--"){somaFinal+=+mb;contFinal++;}
+if(mb!=="--"){sf+=+mb;cf++;}
 }
 
 boletimAluno.innerHTML=html;
-mediaFinal.innerHTML=notaHTML(contFinal?(somaFinal/contFinal).toFixed(2):"--");
+mediaFinal.innerHTML=notaHTML(cf?(sf/cf).toFixed(2):"--");
+}
+
+function gerarRanking(){
+let alunos=Object.keys(localStorage).filter(k=>k.startsWith("user_")).map(u=>{
+let n=u.replace("user_","");
+let d=JSON.parse(localStorage.getItem("boletim_"+n)||"{}");
+let s=0,c=0;
+for(let b=1;b<=4;b++){
+if(d[b]?.mediaBimestre){s+=+d[b].mediaBimestre;c++;}
+}
+return {nome:n,media:c?(s/c):0};
+}).sort((a,b)=>b.media-a.media);
+
+ranking.innerHTML=alunos.slice(0,3)
+.map((a,i)=>`${i+1}º - ${a.nome} (${a.media.toFixed(2)})`)
+.join("<br>");
 }
 </script>
-
 </body>
 </html>
+
