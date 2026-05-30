@@ -3,19 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <title>Portal Escolar</title>
-
 <style>
+*{box-sizing:border-box;}
 body{
-margin:0;
-font-family:Arial, sans-serif;
-background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-color:white;
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  color:white;
+  min-height:100vh;
 }
 .container{max-width:1200px;margin:auto;padding:30px;}
 .box{background:rgba(0,0,0,0.45);padding:20px;border-radius:10px;margin-bottom:20px;}
-input,select,button,textarea{width:100%;padding:8px;margin:4px 0;border:none;border-radius:6px;}
-button{background:#00c6ff;font-weight:bold;cursor:pointer;}
-button:hover{background:#0072ff;}
+input,select,button,textarea{width:100%;padding:8px;margin:4px 0;border:none;border-radius:6px;color:#000;}
+button{background:#00c6ff;font-weight:bold;cursor:pointer;color:#000;}
+button:hover{background:#0072ff;color:#fff;}
 .hidden{display:none;}
 table{width:100%;border-collapse:collapse;margin-top:10px;}
 th,td{border:1px solid rgba(255,255,255,0.2);padding:6px;text-align:center;}
@@ -23,253 +24,1041 @@ th{background:rgba(0,0,0,0.4);}
 .reprovado{color:#ff4d4d;font-weight:bold;}
 .ouro{color:gold;font-weight:bold;}
 .prata{color:silver;font-weight:bold;}
+/* NOVOS ESTILOS */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px;}
+.tab-btn{width:auto;padding:8px 16px;background:rgba(0,198,255,0.3);color:#fff;border-radius:20px;font-size:13px;}
+.tab-btn.active{background:#00c6ff;color:#000;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+.competencia-box{background:rgba(255,255,255,0.07);border-radius:8px;padding:12px;margin-bottom:10px;}
+.competencia-box h4{margin:0 0 8px;color:#00c6ff;}
+.crit-row{display:flex;align-items:center;gap:8px;margin:4px 0;}
+.crit-row label{flex:1;font-size:13px;}
+.crit-row input{width:80px;flex:none;}
+.crit-total{font-weight:bold;color:#0f0;margin-top:6px;}
+.nota-final-red{font-size:1.3em;font-weight:bold;color:gold;margin:10px 0;}
+.prova-card{background:rgba(255,255,255,0.07);border-radius:8px;padding:12px;margin-bottom:10px;}
+.prova-card h4{margin:0 0 6px;color:#00c6ff;}
+.prova-card p{margin:2px 0;font-size:13px;}
+.questao-box{background:rgba(0,0,0,0.3);border-radius:8px;padding:12px;margin:8px 0;}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:bold;}
+.badge-verde{background:#0a0;color:#fff;}
+.badge-amarelo{background:#aa0;color:#fff;}
+.badge-cinza{background:#555;color:#fff;}
+.badge-azul{background:#00c6ff;color:#000;}
+.btn-sm{width:auto;padding:5px 12px;font-size:12px;margin:3px;}
+.btn-danger{background:#c00;color:#fff;}
+.btn-danger:hover{background:#f00;}
+.btn-success{background:#0a0;color:#fff;}
+.btn-success:hover{background:#0d0;}
+.correção-area{background:rgba(0,0,0,0.3);border-radius:8px;padding:12px;margin:8px 0;}
+hr{border-color:rgba(255,255,255,0.15);}
+.info-box{background:rgba(0,198,255,0.1);border:1px solid #00c6ff;border-radius:8px;padding:10px;margin:8px 0;font-size:13px;}
+textarea{background:#fff;color:#000;min-height:80px;resize:vertical;}
+select{background:#fff;}
+input[type=number]{background:#fff;}
+input[type=text]{background:#fff;}
+input[type=password]{background:#fff;}
 </style>
 </head>
-
 <body>
 <div class="container">
 
+<!-- LOGIN -->
 <div class="box" id="loginBox">
-<h2>Login</h2>
-<input id="loginUser" placeholder="Usuário">
-<input id="loginPass" type="password" placeholder="Senha">
-<button onclick="login()">Entrar</button>
-<button onclick="showRegister()">Criar conta</button>
+  <h2>Login</h2>
+  <input id="loginUser" placeholder="Usuário">
+  <input id="loginPass" type="password" placeholder="Senha">
+  <button onclick="login()">Entrar</button>
+  <button onclick="showRegister()">Criar conta</button>
 </div>
 
+<!-- CADASTRO -->
 <div class="box hidden" id="registerBox">
-<h2>Criar conta</h2>
-<input id="regUser">
-<input id="regPass" type="password">
-<button onclick="register()">Registrar</button>
-<button onclick="backLogin()">Voltar</button>
+  <h2>Criar conta</h2>
+  <input id="regUser" placeholder="Usuário">
+  <input id="regPass" type="password" placeholder="Senha">
+  <button onclick="register()">Registrar</button>
+  <button onclick="backLogin()">Voltar</button>
 </div>
 
+<!-- SITE PRINCIPAL -->
 <div class="hidden" id="siteBox">
-<h2>📘 Portal Escolar</h2>
+  <h2>📘 Portal Escolar</h2>
 
-<div class="box hidden" id="adminBox">
-<h3>Administrador</h3>
+  <!-- ADMIN -->
+  <div class="box hidden" id="adminBox">
+    <h3>Administrador</h3>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showAdminTab('boletim')">📋 Boletim</button>
+      <button class="tab-btn" onclick="showAdminTab('redacao')">✍️ Redação</button>
+      <button class="tab-btn" onclick="showAdminTab('correcao')">🔍 Correção de Provas</button>
+      <button class="tab-btn" onclick="showAdminTab('ranking')">🏆 Ranking</button>
+      <button class="tab-btn" onclick="showAdminTab('recuperacao')">📉 Recuperação</button>
+    </div>
 
-<select id="bimestreAdmin" onchange="carregarNotas()">
-<option value="1">1º Bimestre</option>
-<option value="2">2º Bimestre</option>
-<option value="3">3º Bimestre</option>
-<option value="4">4º Bimestre</option>
-</select>
+    <!-- ABA BOLETIM ADMIN -->
+    <div id="tab-boletim" class="tab-content active">
+      <select id="bimestreAdmin" onchange="carregarNotas()">
+        <option value="1">1º Bimestre</option>
+        <option value="2">2º Bimestre</option>
+        <option value="3">3º Bimestre</option>
+        <option value="4">4º Bimestre</option>
+      </select>
+      <div id="userList"></div>
+      <h4 id="selectedUser"></h4>
+      <h4>Média Geral do Aluno: <span id="mediaAlunoAdmin">--</span></h4>
+      <h4>📋 Chamada</h4>
+      <select id="presenca">
+        <option value="Presente">Presente</option>
+        <option value="Falta">Falta</option>
+      </select>
+      <div id="materiasInputs"></div>
+      <button onclick="salvarNotas()">Salvar / Atualizar</button>
+    </div>
 
-<div id="userList"></div>
-<h4 id="selectedUser"></h4>
-<h4>Média Geral do Aluno: <span id="mediaAlunoAdmin">--</span></h4>
+    <!-- ABA REDAÇÃO ADMIN -->
+    <div id="tab-redacao" class="tab-content">
+      <h3>✍️ Correção de Redação por Competências</h3>
+      <p>Selecione o aluno:</p>
+      <div id="userListRedacao"></div>
+      <div id="redacaoCorrecaoArea" class="hidden">
+        <h4>Aluno: <span id="alunoRedacaoNome"></span></h4>
+        <div id="competenciasArea"></div>
+        <div class="nota-final-red">Nota Final da Redação: <span id="notaFinalRedacao">0,00</span> / 10,00</div>
+        <button onclick="salvarRedacao()">💾 Salvar Nota de Redação</button>
+      </div>
+    </div>
 
-<h4>📋 Chamada</h4>
-<select id="presenca">
-<option value="Presente">Presente</option>
-<option value="Falta">Falta</option>
-</select>
+    <!-- ABA CORREÇÃO DE PROVAS ADMIN -->
+    <div id="tab-correcao" class="tab-content">
+      <h3>🔍 Provas Enviadas para Correção</h3>
+      <div id="provasEnviadasAdmin"></div>
+    </div>
 
-<div id="materiasInputs"></div>
-<button onclick="salvarNotas()">Salvar / Atualizar</button>
+    <!-- ABA RANKING -->
+    <div id="tab-ranking" class="tab-content">
+      <h3>🏆 Ranking Final</h3>
+      <div id="ranking"></div>
+    </div>
 
-<hr>
-<h3>📉 Alunos em Recuperação</h3>
-<div id="recuperacaoAdmin"></div>
+    <!-- ABA RECUPERAÇÃO -->
+    <div id="tab-recuperacao" class="tab-content">
+      <h3>📉 Alunos em Recuperação</h3>
+      <div id="recuperacaoAdmin"></div>
+    </div>
 
-<hr>
-<h3>🏆 Ranking Final (Admin)</h3>
-<div id="ranking"></div>
-</div>
+    <button onclick="logout()" style="margin-top:10px;">Sair</button>
+  </div>
 
-<div class="box hidden" id="userBox">
-<h3 id="userName"></h3>
-<div id="boletimAluno"></div>
-<h3>Média Final Geral: <span id="mediaFinal">--</span></h3>
-<button onclick="logout()">Sair</button>
-</div>
+  <!-- COORDENAÇÃO -->
+  <!-- NOVO CARGO: COORDENAÇÃO -->
+  <div class="box hidden" id="coordBox">
+    <h3>👩‍💼 Coordenação</h3>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showCoordTab('alunos')">👥 Alunos</button>
+      <button class="tab-btn" onclick="showCoordTab('provas')">📝 Provas</button>
+      <button class="tab-btn" onclick="showCoordTab('rankingCoord')">🏆 Ranking</button>
+      <button class="tab-btn" onclick="showCoordTab('recuperacaoCoord')">📉 Recuperação</button>
+    </div>
 
-</div>
+    <!-- ABA ALUNOS COORD -->
+    <div id="tab-alunos" class="tab-content active">
+      <h4>Selecione um aluno para ver notas:</h4>
+      <div id="userListCoord"></div>
+      <div id="boletimCoordArea" class="hidden">
+        <h4>Boletim de: <span id="alunoCoordNome"></span></h4>
+        <div id="boletimCoordView"></div>
+      </div>
+    </div>
+
+    <!-- ABA PROVAS COORD -->
+    <div id="tab-provas" class="tab-content">
+      <h4>Criar Nova Prova</h4>
+      <input id="provaNome" type="text" placeholder="Nome da prova">
+      <select id="provaMateria">
+        <option value="">-- Matéria --</option>
+      </select>
+      <select id="provaBimestre">
+        <option value="1">1º Bimestre</option>
+        <option value="2">2º Bimestre</option>
+        <option value="3">3º Bimestre</option>
+        <option value="4">4º Bimestre</option>
+      </select>
+      <input id="provaData" type="date">
+      <textarea id="provaDescricao" placeholder="Descrição opcional"></textarea>
+      <button onclick="adicionarQuestao()">➕ Adicionar Questão (máx 15)</button>
+      <div id="questoesEditor"></div>
+      <button onclick="salvarProva()" class="btn-success">💾 Salvar Prova</button>
+      <hr>
+      <h4>Provas Cadastradas</h4>
+      <div id="listaProvasCoord"></div>
+    </div>
+
+    <!-- ABA RANKING COORD -->
+    <div id="tab-rankingCoord" class="tab-content">
+      <h3>🏆 Ranking</h3>
+      <div id="rankingCoord"></div>
+    </div>
+
+    <!-- ABA RECUPERAÇÃO COORD -->
+    <div id="tab-recuperacaoCoord" class="tab-content">
+      <h3>📉 Recuperação</h3>
+      <div id="recuperacaoCoord"></div>
+    </div>
+
+    <button onclick="logout()" style="margin-top:10px;">Sair</button>
+  </div>
+
+  <!-- ALUNO -->
+  <div class="box hidden" id="userBox">
+    <h3 id="userName"></h3>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showAlunoTab('boletimAluno')">📋 Boletim</button>
+      <!-- ÁREA DE PROVAS DO ALUNO -->
+      <button class="tab-btn" onclick="showAlunoTab('provasAluno')">📝 Provas</button>
+      <button class="tab-btn" onclick="showAlunoTab('historicoAluno')">📊 Histórico de Provas</button>
+    </div>
+
+    <!-- ABA BOLETIM ALUNO -->
+    <div id="tab-boletimAluno" class="tab-content active">
+      <div id="boletimAluno"></div>
+      <h3>Média Final Geral: <span id="mediaFinal">--</span></h3>
+    </div>
+
+    <!-- ABA PROVAS ALUNO -->
+    <div id="tab-provasAluno" class="tab-content">
+      <h4>📝 Provas Disponíveis</h4>
+      <div id="provasDisponiveisAluno"></div>
+      <h4>✅ Provas Concluídas</h4>
+      <div id="provasConcluidas"></div>
+      <h4>⏳ Aguardando Correção</h4>
+      <div id="provasAguardando"></div>
+    </div>
+
+    <!-- ABA HISTÓRICO ALUNO -->
+    <div id="tab-historicoAluno" class="tab-content">
+      <!-- HISTÓRICO DE PROVAS SEPARADO DO BOLETIM -->
+      <h4>📊 Histórico de Provas</h4>
+      <div id="historicoProvasAluno"></div>
+    </div>
+
+    <button onclick="logout()">Sair</button>
+  </div>
+
+  <!-- MODAL FAZER PROVA -->
+  <div class="box hidden" id="provaModal">
+    <h3>📝 <span id="provaModalNome"></span></h3>
+    <div id="provaModalQuestoes"></div>
+    <button onclick="salvarProvaAluno(false)">💾 Salvar Rascunho</button>
+    <button onclick="salvarProvaAluno(true)" class="btn-success">📤 Enviar Prova</button>
+    <button onclick="fecharProvaModal()">✖ Cancelar</button>
+  </div>
+
+  <!-- MODAL CORRIGIR PROVA (ADMIN) -->
+  <div class="box hidden" id="correcaoModal">
+    <h3>🔍 Corrigir Prova: <span id="correcaoNomeProva"></span></h3>
+    <h4>Aluno: <span id="correcaoNomeAluno"></span></h4>
+    <div id="correcaoQuestoesView"></div>
+    <h4>Nota Final (0-10):</h4>
+    <input id="notaCorrecao" type="number" min="0" max="10" step="0.1" style="width:120px;">
+    <h4>Comentário (opcional):</h4>
+    <textarea id="comentarioCorrecao"></textarea>
+    <button onclick="salvarCorrecao()" class="btn-success">💾 Salvar Correção</button>
+    <button id="btnLancarBoletim" onclick="lancarNoBoletim()" class="hidden btn-success">📋 Adicionar ao Boletim</button>
+    <button onclick="fecharCorrecaoModal()">✖ Fechar</button>
+  </div>
+
+</div><!-- /siteBox -->
+</div><!-- /container -->
 
 <script>
-const ADMIN_USER="Joaonetosantana";
-const ADMIN_PASS="131210";
+// ===================== CONSTANTES =====================
+const ADMIN_USER = "Joaonetosantana";
+const ADMIN_PASS = "131210";
+// NOVO: credenciais da coordenação
+const COORD_USER = "coordenacao";
+const COORD_PASS = "10";
 
-const materias=["Português","Matemática","Ciências","História","Geografia","Inglês","Educação Física"];
+const materias = ["Português","Matemática","Ciências","História","Geografia","Inglês","Educação Física"];
 
-let currentUser="",isAdmin=false,selectedAluno="";
+// DEFINIÇÃO DAS COMPETÊNCIAS DE REDAÇÃO
+const competencias = [
+  {
+    nome:"C1 – Adequação Linguística", max:2.0,
+    criterios:[
+      {nome:"Acentuação",val:0.2},{nome:"Ortografia",val:0.2},{nome:"Pontuação",val:0.3},
+      {nome:"Concordância verbal",val:0.3},{nome:"Concordância nominal",val:0.2},
+      {nome:"Regência e crase",val:0.2},{nome:"Uso de maiúsculas/minúsculas",val:0.1},
+      {nome:"Estrutura das frases",val:0.3},{nome:"Uso correto dos tempos verbais",val:0.2}
+    ]
+  },
+  {
+    nome:"C2 – Compreensão do Tema", max:2.0,
+    criterios:[
+      {nome:"Compreendeu o tema",val:0.5},{nome:"Manteve-se no tema",val:0.4},
+      {nome:"Desenvolveu a ideia principal",val:0.4},{nome:"Apresentou argumentos",val:0.4},
+      {nome:"Não fugiu do tipo dissertativo",val:0.3}
+    ]
+  },
+  {
+    nome:"C3 – Argumentação", max:2.0,
+    criterios:[
+      {nome:"Argumentos relevantes",val:0.5},{nome:"Explicou os argumentos",val:0.4},
+      {nome:"Organização lógica das ideias",val:0.5},{nome:"Progressão textual",val:0.3},
+      {nome:"Evitou repetições excessivas",val:0.3}
+    ]
+  },
+  {
+    nome:"C4 – Coesão Textual", max:2.0,
+    criterios:[
+      {nome:"Uso de conectivos",val:0.6},{nome:"Ligação entre frases",val:0.5},
+      {nome:"Ligação entre períodos",val:0.3},{nome:"Referenciação adequada",val:0.3},
+      {nome:"Fluidez do texto",val:0.3}
+    ]
+  },
+  {
+    nome:"C5 – Proposta de Intervenção", max:2.0,
+    criterios:[
+      {nome:"Apresenta solução",val:0.5},{nome:"Agente responsável",val:0.4},
+      {nome:"Ação proposta",val:0.4},{nome:"Meio/modo de execução",val:0.3},
+      {nome:"Finalidade da ação",val:0.4}
+    ]
+  }
+];
 
-function showRegister(){loginBox.classList.add("hidden");registerBox.classList.remove("hidden");}
-function backLogin(){registerBox.classList.add("hidden");loginBox.classList.remove("hidden");}
+let currentUser = "", isAdmin = false, isCoord = false, selectedAluno = "";
+let questoesEditor = []; // questões da prova sendo criada
+let provaAtualId = null;  // id da prova sendo respondida
+let correcaoAtualKey = null; // chave da correção em andamento
+
+// ===================== NAVEGAÇÃO =====================
+function showRegister(){ loginBox.classList.add("hidden"); registerBox.classList.remove("hidden"); }
+function backLogin(){ registerBox.classList.add("hidden"); loginBox.classList.remove("hidden"); }
 
 function register(){
-localStorage.setItem("user_"+regUser.value,regPass.value);
-alert("Conta criada!");
-backLogin();
+  if(!regUser.value || !regPass.value){ alert("Preencha usuário e senha!"); return; }
+  if(localStorage.getItem("user_"+regUser.value)){ alert("Usuário já existe!"); return; }
+  localStorage.setItem("user_"+regUser.value, regPass.value);
+  alert("Conta criada!");
+  backLogin();
 }
 
 function login(){
-if(loginUser.value===ADMIN_USER && loginPass.value===ADMIN_PASS) enter(true,loginUser.value);
-else if(localStorage.getItem("user_"+loginUser.value)===loginPass.value) enter(false,loginUser.value);
-else alert("Login inválido");
+  if(loginUser.value===ADMIN_USER && loginPass.value===ADMIN_PASS) enter("admin", loginUser.value);
+  else if(loginUser.value===COORD_USER && loginPass.value===COORD_PASS) enter("coord", loginUser.value);
+  else if(localStorage.getItem("user_"+loginUser.value)===loginPass.value) enter("aluno", loginUser.value);
+  else alert("Login inválido");
 }
 
-function enter(a,u){
-isAdmin=a; currentUser=u;
-loginBox.classList.add("hidden");
-registerBox.classList.add("hidden");
-siteBox.classList.remove("hidden");
-a?loadAdmin():loadAluno();
+function enter(tipo, u){
+  isAdmin = tipo==="admin";
+  isCoord = tipo==="coord";
+  currentUser = u;
+  loginBox.classList.add("hidden");
+  registerBox.classList.add("hidden");
+  siteBox.classList.remove("hidden");
+  if(tipo==="admin") loadAdmin();
+  else if(tipo==="coord") loadCoord();
+  else loadAluno();
 }
 
-function logout(){location.reload();}
+function logout(){ location.reload(); }
 
+// ===================== ABAS =====================
+function showAdminTab(tab){
+  document.querySelectorAll('#adminBox .tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#adminBox .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  event.target.classList.add('active');
+  if(tab==='ranking') gerarRanking();
+  if(tab==='recuperacao') gerarRecuperacao();
+  if(tab==='redacao') loadRedacaoAdmin();
+  if(tab==='correcao') carregarProvasEnviadas();
+}
+
+function showCoordTab(tab){
+  document.querySelectorAll('#coordBox .tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#coordBox .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  event.target.classList.add('active');
+  if(tab==='provas') loadProvasCoord();
+  if(tab==='rankingCoord') gerarRankingCoord();
+  if(tab==='recuperacaoCoord') gerarRecuperacaoCoord();
+  if(tab==='alunos') loadAlunosCoord();
+}
+
+function showAlunoTab(tab){
+  document.querySelectorAll('#userBox .tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#userBox .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  event.target.classList.add('active');
+  if(tab==='provasAluno') loadProvasAluno();
+  if(tab==='historicoAluno') loadHistoricoAluno();
+}
+
+// ===================== ADMIN =====================
 function loadAdmin(){
-adminBox.classList.remove("hidden");
-userBox.classList.add("hidden");
+  adminBox.classList.remove("hidden");
+  userBox.classList.add("hidden");
+  coordBox.classList.add("hidden");
 
-materiasInputs.innerHTML="";
-materias.forEach(m=>{
-materiasInputs.innerHTML+=`
-<h4>${m}</h4>
-<input id="${m}_red" type="number" placeholder="Redação">
-<input id="${m}_sim" type="number" placeholder="Simulado">
-<input id="${m}_atv" type="number" placeholder="Atividades">
-<input id="${m}_prova" type="number" placeholder="Prova">
-`;
-});
+  // Preencher selects de matéria
+  materiasInputs.innerHTML = "";
+  materias.forEach(m=>{
+    materiasInputs.innerHTML += `
+      <h4>${m}</h4>
+      <input id="${m}_sim" type="number" min="0" max="10" placeholder="Simulado (0-10)">
+      <input id="${m}_vis" type="number" min="0" max="2" placeholder="Vistos (0-2)">
+      <input id="${m}_prova" type="number" min="0" max="8" placeholder="Prova (0-8)">
+      <small style="color:#aaa">Redação: preenchida automaticamente pela área de competências</small>
+      <input id="${m}_red_display" type="number" min="0" max="10" placeholder="Redação (auto)" readonly style="background:#ddd;cursor:not-allowed;">
+    `;
+  });
 
-userList.innerHTML="";
-Object.keys(localStorage).filter(k=>k.startsWith("user_")).forEach(u=>{
-let n=u.replace("user_","");
-let b=document.createElement("button");
-b.innerText=n;
-b.onclick=()=>{selectedAluno=n;selectedUser.innerText="Aluno: "+n;carregarNotas();};
-userList.appendChild(b);
-});
+  userList.innerHTML = "";
+  Object.keys(localStorage).filter(k=>k.startsWith("user_")).forEach(u=>{
+    let n = u.replace("user_","");
+    let b = document.createElement("button");
+    b.innerText = n; b.className = "btn-sm";
+    b.onclick = ()=>{ selectedAluno=n; selectedUser.innerText="Aluno: "+n; carregarNotas(); };
+    userList.appendChild(b);
+  });
 
-gerarRanking();
-gerarRecuperacao();
+  gerarRanking();
+  gerarRecuperacao();
 }
 
 function carregarNotas(){
-if(!selectedAluno) return;
-let d=JSON.parse(localStorage.getItem("boletim_"+selectedAluno)||"{}");
-let b=bimestreAdmin.value;
-presenca.value=d[b]?.presenca||"Presente";
+  if(!selectedAluno) return;
+  let d = JSON.parse(localStorage.getItem("boletim_"+selectedAluno)||"{}");
+  let b = bimestreAdmin.value;
+  presenca.value = d[b]?.presenca||"Presente";
 
-let soma=0,cont=0;
-for(let i=1;i<=4;i++){
-if(d[i]?.mediaBimestre){soma+=+d[i].mediaBimestre;cont++;}
+  // Nota de redação salva
+  let redNota = getNotaRedacao(selectedAluno);
+
+  let soma=0, cont=0;
+  for(let i=1;i<=4;i++){
+    if(d[i]?.mediaBimestre){ soma+=+d[i].mediaBimestre; cont++; }
+  }
+  mediaAlunoAdmin.innerText = cont ? (soma/cont).toFixed(2) : "--";
+
+  materias.forEach(m=>{
+    let x = d[b]?.[m];
+    document.getElementById(m+"_sim").value = x?.sim||"";
+    document.getElementById(m+"_vis").value = x?.vis||"";
+    document.getElementById(m+"_prova").value = x?.prova||"";
+    // Preenche redação automática
+    document.getElementById(m+"_red_display").value = redNota!==null ? redNota : (x?.red||"");
+  });
 }
-mediaAlunoAdmin.innerText=cont?(soma/cont).toFixed(2):"--";
 
-materias.forEach(m=>{
-let x=d[b]?.[m];
-document.getElementById(m+"_red").value=x?.red||"";
-document.getElementById(m+"_sim").value=x?.sim||"";
-document.getElementById(m+"_atv").value=x?.atv||"";
-document.getElementById(m+"_prova").value=x?.prova||"";
-});
+// CÁLCULO CORRIGIDO: (Redação*1 + Simulado*1 + Vistos*1 + Prova*1) com pesos corretos
+// Redação: 0-10, Simulado: 0-10, Vistos: 0-2 (normalizado para 10 = 0-2), Prova: 0-8
+// Média = (Redação + Simulado + (Vistos/2*10) + (Prova/8*10)) / 4
+// BUG CORRIGIDO: fórmula anterior dividia por 3 com 4 componentes
+function calcularMedia(red, sim, vis, prova){
+  // Normaliza cada componente para 0-10 com seus pesos
+  // Redação: máx 10, Simulado: máx 10, Vistos: máx 2 (= 1 ponto no total de 10), Prova: máx 8 (= ~8 pontos)
+  // Soma máxima = 10 + 10 + 2 + 8 = 30 → escala para 10: /3
+  let soma = (+red) + (+sim) + (+vis) + (+prova);
+  return (soma / 3).toFixed(2); // máx 30/3 = 10
 }
 
 function salvarNotas(){
-let b=bimestreAdmin.value;
-let d=JSON.parse(localStorage.getItem("boletim_"+selectedAluno)||"{}");
-d[b]={presenca:presenca.value};
-let soma=0,cont=0;
+  if(!selectedAluno){ alert("Selecione um aluno!"); return; }
+  let b = bimestreAdmin.value;
+  let d = JSON.parse(localStorage.getItem("boletim_"+selectedAluno)||"{}");
+  d[b] = { presenca: presenca.value };
+  let soma=0, cont=0;
+  let redNota = getNotaRedacao(selectedAluno);
 
-materias.forEach(m=>{
-let r=+document.getElementById(m+"_red").value||0;
-let s=+document.getElementById(m+"_sim").value||0;
-let a=+document.getElementById(m+"_atv").value||0;
-let p=+document.getElementById(m+"_prova").value||0;
-if(r||s||a||p){
-let media=((r+s+a+p)/3).toFixed(2);
-d[b][m]={red:r,sim:s,atv:a,prova:p,media};
-soma+=+media; cont++;
+  materias.forEach(m=>{
+    let sim = +document.getElementById(m+"_sim").value||0;
+    let vis = +document.getElementById(m+"_vis").value||0;
+    let prova = +document.getElementById(m+"_prova").value||0;
+    let red = redNota!==null ? redNota : (+document.getElementById(m+"_red_display").value||0);
+    if(sim||vis||prova||red){
+      // CÁLCULO CORRIGIDO
+      let media = calcularMedia(red, sim, vis, prova);
+      d[b][m] = { red, sim, vis, prova, media };
+      soma += +media; cont++;
+    }
+  });
+
+  d[b].mediaBimestre = cont ? (soma/cont).toFixed(2) : "--";
+  localStorage.setItem("boletim_"+selectedAluno, JSON.stringify(d));
+  alert("Notas salvas!");
+  gerarRanking();
+  gerarRecuperacao();
+  carregarNotas();
 }
-});
 
-d[b].mediaBimestre=cont?(soma/cont).toFixed(2):"--";
-localStorage.setItem("boletim_"+selectedAluno,JSON.stringify(d));
-alert("Notas salvas!");
-gerarRanking();
-gerarRecuperacao();
+// ===================== REDAÇÃO POR COMPETÊNCIAS =====================
+function getNotaRedacao(aluno){
+  let r = localStorage.getItem("redacao_"+aluno);
+  if(!r) return null;
+  return parseFloat(JSON.parse(r).notaFinal)||0;
 }
 
+function loadRedacaoAdmin(){
+  userListRedacao.innerHTML = "";
+  Object.keys(localStorage).filter(k=>k.startsWith("user_")).forEach(u=>{
+    let n = u.replace("user_","");
+    let btn = document.createElement("button");
+    btn.innerText = n; btn.className = "btn-sm";
+    btn.onclick = ()=>{ abrirCorrecaoRedacao(n); };
+    userListRedacao.appendChild(btn);
+  });
+}
+
+function abrirCorrecaoRedacao(aluno){
+  redacaoCorrecaoArea.classList.remove("hidden");
+  alunoRedacaoNome.innerText = aluno;
+  let salvo = JSON.parse(localStorage.getItem("redacao_"+aluno)||"{}");
+
+  let html = "";
+  competencias.forEach((c,ci)=>{
+    html += `<div class="competencia-box">
+      <h4>${c.nome} (máx ${c.max.toFixed(1)})</h4>`;
+    c.criterios.forEach((cr,cri)=>{
+      let salvoVal = salvo[`c${ci}_${cri}`]||0;
+      html += `<div class="crit-row">
+        <label>${cr.nome} (máx ${cr.val})</label>
+        <input type="number" id="comp_${ci}_${cri}" min="0" max="${cr.val}" step="0.1"
+          value="${salvoVal}" oninput="recalcularRedacao()">
+      </div>`;
+    });
+    html += `<div class="crit-total">Total C${ci+1}: <span id="totalC${ci}">0,00</span> / ${c.max.toFixed(1)}</div></div>`;
+  });
+  competenciasArea.innerHTML = html;
+  recalcularRedacao();
+}
+
+function recalcularRedacao(){
+  let total = 0;
+  competencias.forEach((c,ci)=>{
+    let soma = 0;
+    c.criterios.forEach((cr,cri)=>{
+      let el = document.getElementById(`comp_${ci}_${cri}`);
+      if(el) soma += Math.min(parseFloat(el.value)||0, cr.val);
+    });
+    soma = Math.min(soma, c.max);
+    let el = document.getElementById(`totalC${ci}`);
+    if(el) el.innerText = soma.toFixed(2);
+    total += soma;
+  });
+  total = Math.min(total, 10);
+  notaFinalRedacao.innerText = total.toFixed(2);
+}
+
+function salvarRedacao(){
+  let aluno = alunoRedacaoNome.innerText;
+  let dados = {};
+  competencias.forEach((c,ci)=>{
+    c.criterios.forEach((cr,cri)=>{
+      let el = document.getElementById(`comp_${ci}_${cri}`);
+      dados[`c${ci}_${cri}`] = el ? parseFloat(el.value)||0 : 0;
+    });
+  });
+  dados.notaFinal = parseFloat(notaFinalRedacao.innerText.replace(",","."));
+  localStorage.setItem("redacao_"+aluno, JSON.stringify(dados));
+  alert(`Redação salva! Nota: ${dados.notaFinal.toFixed(2)}`);
+}
+
+// ===================== RECUPERAÇÃO / RANKING =====================
 function gerarRecuperacao(){
-let html="";
-Object.keys(localStorage).filter(k=>k.startsWith("user_")).forEach(u=>{
-let nome=u.replace("user_","");
-let d=JSON.parse(localStorage.getItem("boletim_"+nome)||"{}");
-let rec=[];
-for(let b=1;b<=4;b++){
-materias.forEach(m=>{
-if(d[b]?.[m]?.media<6 && !rec.includes(m)) rec.push(m);
-});
-}
-if(rec.length) html+=`<p><b>${nome}</b>: ${rec.join(", ")}</p>`;
-});
-recuperacaoAdmin.innerHTML=html||"Nenhum aluno em recuperação 🎉";
+  let html = "";
+  Object.keys(localStorage).filter(k=>k.startsWith("user_")).forEach(u=>{
+    let nome = u.replace("user_","");
+    let d = JSON.parse(localStorage.getItem("boletim_"+nome)||"{}");
+    let rec = [];
+    for(let b=1;b<=4;b++){
+      materias.forEach(m=>{
+        if(d[b]?.[m]?.media < 6 && !rec.includes(m)) rec.push(m);
+      });
+    }
+    if(rec.length) html += `<p><b>${nome}</b>: ${rec.join(", ")}</p>`;
+  });
+  recuperacaoAdmin.innerHTML = html||"Nenhum aluno em recuperação 🎉";
 }
 
 function notaHTML(v){
-if(v==="--") return "--";
-return `<span class="${v<6?'reprovado':''}">${v}</span>`;
-}
-
-function loadAluno(){
-adminBox.classList.add("hidden");
-userBox.classList.remove("hidden");
-userName.innerText="Aluno: "+currentUser;
-
-let d=JSON.parse(localStorage.getItem("boletim_"+currentUser)||"{}");
-let html="",sf=0,cf=0;
-
-for(let b=1;b<=4;b++){
-let mb=d[b]?.mediaBimestre||"--";
-let alamar=mb>=9?'<span class="ouro">🏅 Ouro</span>':mb>=8?'<span class="prata">🥈 Prata</span>':"";
-html+=`<h3>${b}º Bimestre ${alamar}</h3>
-<p>📋 Chamada: ${d[b]?.presenca||"--"}</p>
-<table>
-<tr><th>Matéria</th><th>Red</th><th>Sim</th><th>Atv</th><th>Prova</th><th>Média</th></tr>`;
-
-materias.forEach(m=>{
-let x=d[b]?.[m];
-html+=`
-<tr>
-<td>${m}</td>
-<td>${x?.red??"--"}</td>
-<td>${x?.sim??"--"}</td>
-<td>${x?.atv??"--"}</td>
-<td>${x?.prova??"--"}</td>
-<td>${notaHTML(x?.media??"--")}</td>
-</tr>`;
-});
-
-html+=`<tr><th colspan="5">Média do Bimestre</th><th>${notaHTML(mb)}</th></tr></table>`;
-if(mb!=="--"){sf+=+mb;cf++;}
-}
-
-boletimAluno.innerHTML=html;
-mediaFinal.innerHTML=notaHTML(cf?(sf/cf).toFixed(2):"--");
+  if(v==="--") return "--";
+  return `<span class="${v<6?'reprovado':''}">${v}</span>`;
 }
 
 function gerarRanking(){
-let alunos=Object.keys(localStorage).filter(k=>k.startsWith("user_")).map(u=>{
-let n=u.replace("user_","");
-let d=JSON.parse(localStorage.getItem("boletim_"+n)||"{}");
-let s=0,c=0;
-for(let b=1;b<=4;b++){
-if(d[b]?.mediaBimestre){s+=+d[b].mediaBimestre;c++;}
-}
-return {nome:n,media:c?(s/c):0};
-}).sort((a,b)=>b.media-a.media);
+  let alunos = Object.keys(localStorage).filter(k=>k.startsWith("user_")).map(u=>{
+    let n = u.replace("user_","");
+    let d = JSON.parse(localStorage.getItem("boletim_"+n)||"{}");
+    let s=0,c=0;
+    for(let b=1;b<=4;b++){
+      if(d[b]?.mediaBimestre){ s+=+d[b].mediaBimestre; c++; }
+    }
+    return {nome:n, media:c?(s/c):0};
+  }).sort((a,b)=>b.media-a.media);
 
-ranking.innerHTML=alunos.slice(0,3)
-.map((a,i)=>`${i+1}º - ${a.nome} (${a.media.toFixed(2)})`)
-.join("<br>");
+  ranking.innerHTML = alunos.slice(0,3)
+    .map((a,i)=>`<p>${i+1}º - ${a.nome} (${a.media.toFixed(2)})</p>`)
+    .join("");
+}
+
+// ===================== COORDENAÇÃO =====================
+function loadCoord(){
+  coordBox.classList.remove("hidden");
+  adminBox.classList.add("hidden");
+  userBox.classList.add("hidden");
+  // Preencher select de matéria nas provas
+  let sel = document.getElementById("provaMateria");
+  sel.innerHTML = '<option value="">-- Matéria --</option>';
+  materias.forEach(m=>{ sel.innerHTML += `<option value="${m}">${m}</option>`; });
+  loadAlunosCoord();
+}
+
+function loadAlunosCoord(){
+  userListCoord.innerHTML = "";
+  Object.keys(localStorage).filter(k=>k.startsWith("user_")).forEach(u=>{
+    let n = u.replace("user_","");
+    let btn = document.createElement("button");
+    btn.innerText = n; btn.className = "btn-sm";
+    btn.onclick = ()=>{ verBoletimCoord(n); };
+    userListCoord.appendChild(btn);
+  });
+}
+
+function verBoletimCoord(aluno){
+  boletimCoordArea.classList.remove("hidden");
+  alunoCoordNome.innerText = aluno;
+  let d = JSON.parse(localStorage.getItem("boletim_"+aluno)||"{}");
+  let html="";
+  for(let b=1;b<=4;b++){
+    html += `<h4>${b}º Bimestre — Média: ${notaHTML(d[b]?.mediaBimestre||"--")}</h4>
+    <table><tr><th>Matéria</th><th>Red</th><th>Sim</th><th>Vistos</th><th>Prova</th><th>Média</th></tr>`;
+    materias.forEach(m=>{
+      let x = d[b]?.[m];
+      html += `<tr><td>${m}</td><td>${x?.red??"--"}</td><td>${x?.sim??"--"}</td>
+        <td>${x?.vis??"--"}</td><td>${x?.prova??"--"}</td>
+        <td>${notaHTML(x?.media??"--")}</td></tr>`;
+    });
+    html += `</table>`;
+  }
+  boletimCoordView.innerHTML = html;
+}
+
+function gerarRankingCoord(){
+  let alunos = Object.keys(localStorage).filter(k=>k.startsWith("user_")).map(u=>{
+    let n = u.replace("user_","");
+    let d = JSON.parse(localStorage.getItem("boletim_"+n)||"{}");
+    let s=0,c=0;
+    for(let b=1;b<=4;b++){
+      if(d[b]?.mediaBimestre){ s+=+d[b].mediaBimestre; c++; }
+    }
+    return {nome:n,media:c?(s/c):0};
+  }).sort((a,b)=>b.media-a.media);
+  rankingCoord.innerHTML = alunos.map((a,i)=>`<p>${i+1}º - ${a.nome} (${a.media.toFixed(2)})</p>`).join("");
+}
+
+function gerarRecuperacaoCoord(){
+  let html="";
+  Object.keys(localStorage).filter(k=>k.startsWith("user_")).forEach(u=>{
+    let nome = u.replace("user_","");
+    let d = JSON.parse(localStorage.getItem("boletim_"+nome)||"{}");
+    let rec=[];
+    for(let b=1;b<=4;b++){
+      materias.forEach(m=>{
+        if(d[b]?.[m]?.media<6 && !rec.includes(m)) rec.push(m);
+      });
+    }
+    if(rec.length) html += `<p><b>${nome}</b>: ${rec.join(", ")}</p>`;
+  });
+  recuperacaoCoord.innerHTML = html||"Nenhum aluno em recuperação 🎉";
+}
+
+// ===================== SISTEMA DE PROVAS (COORDENAÇÃO) =====================
+function getProvas(){ return JSON.parse(localStorage.getItem("provas")||"[]"); }
+function salvarProvas(p){ localStorage.setItem("provas",JSON.stringify(p)); }
+
+// Adicionar questão na tela de criação
+function adicionarQuestao(){
+  if(questoesEditor.length>=15){ alert("Máximo de 15 questões!"); return; }
+  let idx = questoesEditor.length;
+  questoesEditor.push({tipo:"objetiva",enunciado:"",alternativas:["","","",""],correta:0,campo:""});
+  renderQuestoesEditor();
+}
+
+function renderQuestoesEditor(){
+  let html="";
+  questoesEditor.forEach((q,i)=>{
+    html += `<div class="questao-box">
+      <b>Questão ${i+1}</b>
+      <select onchange="questoesEditor[${i}].tipo=this.value;renderQuestoesEditor()">
+        <option value="objetiva" ${q.tipo==="objetiva"?"selected":""}>Objetiva</option>
+        <option value="dissertativa" ${q.tipo==="dissertativa"?"selected":""}>Dissertativa</option>
+        <option value="mista" ${q.tipo==="mista"?"selected":""}>Mista</option>
+      </select>
+      <input type="text" placeholder="Enunciado" value="${q.enunciado}"
+        oninput="questoesEditor[${i}].enunciado=this.value">`;
+    if(q.tipo==="objetiva"||q.tipo==="mista"){
+      q.alternativas.forEach((alt,ai)=>{
+        html += `<div style="display:flex;align-items:center;gap:5px;">
+          <input type="radio" name="correta${i}" ${q.correta===ai?"checked":""}
+            onchange="questoesEditor[${i}].correta=${ai}">
+          <input type="text" placeholder="Alternativa ${String.fromCharCode(65+ai)}"
+            value="${alt}" oninput="questoesEditor[${i}].alternativas[${ai}]=this.value"
+            style="flex:1;">
+        </div>`;
+      });
+    }
+    if(q.tipo==="dissertativa"||q.tipo==="mista"){
+      html += `<small style="color:#aaa">Campo de resposta aberta (preenchido pelo aluno)</small>`;
+    }
+    html += `<button class="btn-sm btn-danger" onclick="removerQuestao(${i})">🗑 Remover</button></div>`;
+  });
+  questoesEditor.innerHTML = html;
+}
+
+function removerQuestao(i){
+  questoesEditor.splice(i,1);
+  renderQuestoesEditor();
+}
+
+function salvarProva(){
+  let nome = provaNome.value.trim();
+  let materia = provaMateria.value;
+  let bimestre = provaBimestre.value;
+  let data = provaData.value;
+  if(!nome||!materia){ alert("Preencha nome e matéria!"); return; }
+  if(questoesEditor.length===0){ alert("Adicione ao menos uma questão!"); return; }
+  let provas = getProvas();
+  let id = Date.now().toString();
+  provas.push({
+    id, nome, materia, bimestre, data,
+    descricao: provaDescricao.value,
+    questoes: JSON.parse(JSON.stringify(questoesEditor))
+  });
+  salvarProvas(provas);
+  questoesEditor = [];
+  provaNome.value=""; provaDescricao.value=""; provaData.value="";
+  alert("Prova salva!");
+  loadProvasCoord();
+}
+
+function loadProvasCoord(){
+  let provas = getProvas();
+  let html="";
+  provas.forEach(p=>{
+    html += `<div class="prova-card">
+      <h4>${p.nome}</h4>
+      <p>📚 ${p.materia} | 📅 ${p.data||"s/d"} | Bimestre ${p.bimestre}</p>
+      <p>${p.descricao||""}</p>
+      <p>${p.questoes.length} questão(ões)</p>
+      <button class="btn-sm btn-danger" onclick="excluirProva('${p.id}')">🗑 Excluir</button>
+      <button class="btn-sm" onclick="editarProvaCoord('${p.id}')">✏️ Editar</button>
+    </div>`;
+  });
+  listaProvasCoord.innerHTML = html||"Nenhuma prova cadastrada.";
+}
+
+function excluirProva(id){
+  if(!confirm("Excluir prova?")) return;
+  let provas = getProvas().filter(p=>p.id!==id);
+  salvarProvas(provas);
+  loadProvasCoord();
+}
+
+// Editar prova: carrega questões no editor
+function editarProvaCoord(id){
+  let p = getProvas().find(x=>x.id===id);
+  if(!p) return;
+  provaNome.value=p.nome; provaMateria.value=p.materia;
+  provaBimestre.value=p.bimestre; provaData.value=p.data;
+  provaDescricao.value=p.descricao||"";
+  questoesEditor = JSON.parse(JSON.stringify(p.questoes));
+  renderQuestoesEditor();
+  // Remove a antiga e salva ao clicar em Salvar
+  excluirProva(id);
+  alert("Prova carregada para edição.");
+}
+
+// ===================== ALUNO =====================
+function loadAluno(){
+  adminBox.classList.add("hidden");
+  coordBox.classList.add("hidden");
+  userBox.classList.remove("hidden");
+  userName.innerText = "Aluno: "+currentUser;
+  renderBoletimAluno();
+}
+
+function renderBoletimAluno(){
+  let d = JSON.parse(localStorage.getItem("boletim_"+currentUser)||"{}");
+  let html="", sf=0, cf=0;
+
+  for(let b=1;b<=4;b++){
+    let mb = d[b]?.mediaBimestre||"--";
+    let alamar = mb>=9?'<span class="ouro">🏅 Ouro</span>':mb>=8?'<span class="prata">🥈 Prata</span>':"";
+    html += `<h3>${b}º Bimestre ${alamar}</h3>
+      <p>📋 Chamada: ${d[b]?.presenca||"--"}</p>
+      <table>
+      <tr><th>Matéria</th><th>Red</th><th>Sim</th><th>Vistos</th><th>Prova</th><th>Média</th></tr>`;
+    materias.forEach(m=>{
+      let x = d[b]?.[m];
+      html += `<tr>
+        <td>${m}</td>
+        <td>${x?.red??"--"}</td><td>${x?.sim??"--"}</td>
+        <td>${x?.vis??"--"}</td><td>${x?.prova??"--"}</td>
+        <td>${notaHTML(x?.media??"--")}</td>
+      </tr>`;
+    });
+    html += `<tr><th colspan="5">Média do Bimestre</th><th>${notaHTML(mb)}</th></tr></table>`;
+    if(mb!=="--"){ sf+=+mb; cf++; }
+  }
+
+  boletimAluno.innerHTML = html;
+  mediaFinal.innerHTML = notaHTML(cf?(sf/cf).toFixed(2):"--");
+}
+
+// ===================== PROVAS DO ALUNO =====================
+function loadProvasAluno(){
+  let provas = getProvas();
+  let respostas = JSON.parse(localStorage.getItem("respostas_"+currentUser)||"{}");
+
+  let dispHTML="", concHTML="", aguardHTML="";
+
+  provas.forEach(p=>{
+    let resp = respostas[p.id];
+    if(!resp){
+      // Disponível
+      dispHTML += `<div class="prova-card">
+        <h4>${p.nome}</h4>
+        <p>📚 ${p.materia} | Bimestre ${p.bimestre} | ${p.data||""}</p>
+        <button class="btn-sm" onclick="abrirProva('${p.id}')">📝 Fazer Prova</button>
+      </div>`;
+    } else if(resp.enviada){
+      // Verificar se foi corrigida
+      let correcao = getCorrecao(currentUser, p.id);
+      if(correcao){
+        concHTML += `<div class="prova-card">
+          <h4>${p.nome}</h4>
+          <p>📚 ${p.materia} | Bimestre ${p.bimestre}</p>
+          <p>✅ Nota: <b>${correcao.nota}</b></p>
+          ${correcao.comentario?`<p>💬 ${correcao.comentario}</p>`:""}
+        </div>`;
+      } else {
+        aguardHTML += `<div class="prova-card">
+          <h4>${p.nome}</h4>
+          <p>📚 ${p.materia} | Bimestre ${p.bimestre}</p>
+          <p class="badge badge-amarelo">⏳ Aguardando correção</p>
+        </div>`;
+      }
+    } else {
+      // Rascunho — ainda pode editar
+      dispHTML += `<div class="prova-card">
+        <h4>${p.nome} <span class="badge badge-cinza">Rascunho</span></h4>
+        <p>📚 ${p.materia} | Bimestre ${p.bimestre}</p>
+        <button class="btn-sm" onclick="abrirProva('${p.id}')">✏️ Continuar</button>
+      </div>`;
+    }
+  });
+
+  provasDisponiveisAluno.innerHTML = dispHTML||"Nenhuma prova disponível.";
+  provasConcluidas.innerHTML = concHTML||"Nenhuma prova corrigida ainda.";
+  provasAguardando.innerHTML = aguardHTML||"Nenhuma aguardando correção.";
+}
+
+function abrirProva(id){
+  let p = getProvas().find(x=>x.id===id);
+  if(!p) return;
+  provaAtualId = id;
+  provaModalNome.innerText = p.nome;
+  let respostas = JSON.parse(localStorage.getItem("respostas_"+currentUser)||"{}");
+  let resp = respostas[id]?.respostas||{};
+
+  let html="";
+  p.questoes.forEach((q,i)=>{
+    html += `<div class="questao-box">
+      <p><b>Q${i+1}:</b> ${q.enunciado}</p>`;
+    if(q.tipo==="objetiva"||q.tipo==="mista"){
+      q.alternativas.forEach((alt,ai)=>{
+        html += `<label style="display:block;cursor:pointer;">
+          <input type="radio" name="q${i}" value="${ai}"
+            ${resp[i]?.escolha===ai?"checked":""}
+            onchange=""> ${String.fromCharCode(65+ai)}) ${alt}
+        </label>`;
+      });
+    }
+    if(q.tipo==="dissertativa"||q.tipo==="mista"){
+      html += `<textarea placeholder="Sua resposta..." id="disc_${i}">${resp[i]?.discursiva||""}</textarea>`;
+    }
+    html += `</div>`;
+  });
+  provaModalQuestoes.innerHTML = html;
+  provaModal.classList.remove("hidden");
+  siteBox.querySelector('#userBox').classList.add("hidden");
+}
+
+function salvarProvaAluno(enviar){
+  let p = getProvas().find(x=>x.id===provaAtualId);
+  if(!p) return;
+  let respostas = JSON.parse(localStorage.getItem("respostas_"+currentUser)||"{}");
+  let resp = {};
+  p.questoes.forEach((q,i)=>{
+    resp[i] = {};
+    if(q.tipo==="objetiva"||q.tipo==="mista"){
+      let sel = document.querySelector(`input[name="q${i}"]:checked`);
+      resp[i].escolha = sel ? parseInt(sel.value) : null;
+    }
+    if(q.tipo==="dissertativa"||q.tipo==="mista"){
+      let el = document.getElementById(`disc_${i}`);
+      resp[i].discursiva = el ? el.value : "";
+    }
+  });
+  respostas[provaAtualId] = { respostas: resp, enviada: enviar };
+  localStorage.setItem("respostas_"+currentUser, JSON.stringify(respostas));
+  if(enviar) alert("Prova enviada com sucesso! Aguarde a correção.");
+  else alert("Rascunho salvo!");
+  fecharProvaModal();
+  loadProvasAluno();
+}
+
+function fecharProvaModal(){
+  provaModal.classList.add("hidden");
+  userBox.classList.remove("hidden");
+}
+
+// HISTÓRICO DE PROVAS DO ALUNO (separado do boletim)
+function loadHistoricoAluno(){
+  let provas = getProvas();
+  let html="";
+  provas.forEach(p=>{
+    let c = getCorrecao(currentUser, p.id);
+    if(c){
+      html += `<div class="prova-card">
+        <h4>${p.nome}</h4>
+        <p>📚 ${p.materia} | Bimestre ${p.bimestre}</p>
+        <p>Nota: <b>${c.nota}</b></p>
+        ${c.comentario?`<p>💬 ${c.comentario}</p>`:""}
+        <span class="badge badge-verde">✅ Corrigida</span>
+      </div>`;
+    }
+  });
+  historicoProvasAluno.innerHTML = html||"Nenhuma prova corrigida ainda.";
+}
+
+// ===================== CORREÇÃO DE PROVAS (ADMIN) =====================
+function getCorrecao(aluno, provaId){
+  let all = JSON.parse(localStorage.getItem("correcoes")||"{}");
+  return all[aluno+"_"+provaId]||null;
+}
+
+function salvarCorrecaoData(aluno, provaId, nota, comentario){
+  let all = JSON.parse(localStorage.getItem("correcoes")||"{}");
+  all[aluno+"_"+provaId] = {nota, comentario, provaId};
+  localStorage.setItem("correcoes", JSON.stringify(all));
+}
+
+function carregarProvasEnviadas(){
+  let provas = getProvas();
+  let html="";
+  Object.keys(localStorage).filter(k=>k.startsWith("respostas_")).forEach(key=>{
+    let aluno = key.replace("respostas_","");
+    let respostas = JSON.parse(localStorage.getItem(key)||"{}");
+    Object.keys(respostas).forEach(provaId=>{
+      let r = respostas[provaId];
+      if(!r.enviada) return;
+      let p = provas.find(x=>x.id===provaId);
+      if(!p) return;
+      let correc = getCorrecao(aluno, provaId);
+      html += `<div class="prova-card">
+        <h4>${p.nome}</h4>
+        <p>👤 Aluno: <b>${aluno}</b> | 📚 ${p.materia} | Bimestre ${p.bimestre}</p>
+        ${correc?`<p>✅ Nota: ${correc.nota}</p>`:'<p class="badge badge-amarelo">⏳ Pendente</p>'}
+        <button class="btn-sm" onclick="abrirCorrecaoModal('${aluno}','${provaId}')">
+          ${correc?"🔄 Re-corrigir":"🔍 Corrigir"}
+        </button>
+      </div>`;
+    });
+  });
+  provasEnviadasAdmin.innerHTML = html||"Nenhuma prova enviada ainda.";
+}
+
+let _correcaoAluno="", _correcaoProvaId="";
+
+function abrirCorrecaoModal(aluno, provaId){
+  _correcaoAluno=aluno; _correcaoProvaId=provaId;
+  let p = getProvas().find(x=>x.id===provaId);
+  if(!p) return;
+  let respostas = JSON.parse(localStorage.getItem("respostas_"+aluno)||"{}");
+  let resp = respostas[provaId]?.respostas||{};
+  correcaoNomeProva.innerText = p.nome;
+  correcaoNomeAluno.innerText = aluno;
+
+  let html="";
+  p.questoes.forEach((q,i)=>{
+    html += `<div class="correção-area">
+      <p><b>Q${i+1}:</b> ${q.enunciado}</p>`;
+    if(q.tipo==="objetiva"||q.tipo==="mista"){
+      let escolha = resp[i]?.escolha;
+      html += `<p>Resposta do aluno: <b>${escolha!==null&&escolha!==undefined ? String.fromCharCode(65+escolha)+") "+q.alternativas[escolha] : "Não respondeu"}</b></p>`;
+      html += `<p>Resposta correta: <b class="badge-verde">${String.fromCharCode(65+q.correta)+") "+q.alternativas[q.correta]}</b></p>`;
+    }
+    if(q.tipo==="dissertativa"||q.tipo==="mista"){
+      html += `<p>Resposta discursiva: <i>${resp[i]?.discursiva||"Em branco"}</i></p>`;
+    }
+    html += `</div>`;
+  });
+
+  correcaoQuestoesView.innerHTML = html;
+  let correc = getCorrecao(aluno, provaId);
+  notaCorrecao.value = correc?.nota||"";
+  comentarioCorrecao.value = correc?.comentario||"";
+  correcaoModal.classList.remove("hidden");
+  adminBox.classList.add("hidden");
+}
+
+function salvarCorrecao(){
+  let nota = parseFloat(notaCorrecao.value);
+  if(isNaN(nota)||nota<0||nota>10){ alert("Nota entre 0 e 10!"); return; }
+  salvarCorrecaoData(_correcaoAluno, _correcaoProvaId, nota, comentarioCorrecao.value);
+  alert("Correção salva!");
+  // Mostrar botão de lançar no boletim
+  btnLancarBoletim.classList.remove("hidden");
+}
+
+// BOTÃO LANÇAR NO BOLETIM: preenche o campo "Prova" da matéria correspondente
+function lancarNoBoletim(){
+  let p = getProvas().find(x=>x.id===_correcaoProvaId);
+  if(!p){ alert("Prova não encontrada!"); return; }
+  let nota = parseFloat(notaCorrecao.value);
+  let d = JSON.parse(localStorage.getItem("boletim_"+_correcaoAluno)||"{}");
+  let b = p.bimestre;
+  if(!d[b]) d[b]={};
+  if(!d[b][p.materia]) d[b][p.materia]={};
+  d[b][p.materia].prova = nota;
+  // Recalcular média se possível
+  let x = d[b][p.materia];
+  let red=+x.red||0, sim=+x.sim||0, vis=+x.vis||0, pv=+x.prova||0;
+  if(red||sim||vis||pv){
+    x.media = calcularMedia(red, sim, vis, pv);
+  }
+  // Recalcular média do bimestre
+  let soma=0,cont=0;
+  materias.forEach(m=>{
+    if(d[b]?.[m]?.media){ soma+=+d[b][m].media; cont++; }
+  });
+  d[b].mediaBimestre = cont?(soma/cont).toFixed(2):"--";
+  localStorage.setItem("boletim_"+_correcaoAluno, JSON.stringify(d));
+  alert(`Nota ${nota} lançada em "${p.materia}" – Bimestre ${b} para ${_correcaoAluno}!`);
+  fecharCorrecaoModal();
+}
+
+function fecharCorrecaoModal(){
+  correcaoModal.classList.add("hidden");
+  adminBox.classList.remove("hidden");
+  btnLancarBoletim.classList.add("hidden");
+  carregarProvasEnviadas();
 }
 </script>
 </body>
 </html>
-
