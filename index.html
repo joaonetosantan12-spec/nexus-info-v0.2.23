@@ -328,7 +328,7 @@ const competencias = [
 ];
 
 let currentUser = "", isAdmin = false, isCoord = false, selectedAluno = "";
-let questoesEditor = []; // questões da prova sendo criada
+let questoesData = []; // CORRIGIDO: renomeado para evitar conflito com o elemento HTML #questoesEditor
 let provaAtualId = null;  // id da prova sendo respondida
 let correcaoAtualKey = null; // chave da correção em andamento
 
@@ -682,65 +682,68 @@ function salvarProvas(p){ localStorage.setItem("provas",JSON.stringify(p)); }
 
 // Adicionar questão na tela de criação
 function adicionarQuestao(){
-  if(questoesEditor.length>=15){ alert("Máximo de 15 questões!"); return; }
-  let idx = questoesEditor.length;
-  questoesEditor.push({tipo:"objetiva",enunciado:"",alternativas:["","","",""],correta:0,campo:""});
+  if(questoesData.length>=15){ alert("Máximo de 15 questões!"); return; }
+  questoesData.push({tipo:"objetiva",enunciado:"",alternativas:["","","",""],correta:0});
   renderQuestoesEditor();
 }
 
+// CORRIGIDO: usa document.getElementById("questoesEditor") em vez da variável de mesmo nome
 function renderQuestoesEditor(){
   let html="";
-  questoesEditor.forEach((q,i)=>{
+  questoesData.forEach((q,i)=>{
     html += `<div class="questao-box">
       <b>Questão ${i+1}</b>
-      <select onchange="questoesEditor[${i}].tipo=this.value;renderQuestoesEditor()">
+      <select onchange="questoesData[${i}].tipo=this.value;renderQuestoesEditor()">
         <option value="objetiva" ${q.tipo==="objetiva"?"selected":""}>Objetiva</option>
         <option value="dissertativa" ${q.tipo==="dissertativa"?"selected":""}>Dissertativa</option>
         <option value="mista" ${q.tipo==="mista"?"selected":""}>Mista</option>
       </select>
-      <input type="text" placeholder="Enunciado" value="${q.enunciado}"
-        oninput="questoesEditor[${i}].enunciado=this.value">`;
+      <input type="text" placeholder="Enunciado" value="${q.enunciado.replace(/"/g,'&quot;')}"
+        oninput="questoesData[${i}].enunciado=this.value">`;
     if(q.tipo==="objetiva"||q.tipo==="mista"){
       q.alternativas.forEach((alt,ai)=>{
-        html += `<div style="display:flex;align-items:center;gap:5px;">
-          <input type="radio" name="correta${i}" ${q.correta===ai?"checked":""}
-            onchange="questoesEditor[${i}].correta=${ai}">
+        html += `<div style="display:flex;align-items:center;gap:5px;margin:3px 0;">
+          <input type="radio" name="correta${i}" value="${ai}" ${q.correta===ai?"checked":""}
+            onchange="questoesData[${i}].correta=${ai}" style="width:auto;flex:none;">
           <input type="text" placeholder="Alternativa ${String.fromCharCode(65+ai)}"
-            value="${alt}" oninput="questoesEditor[${i}].alternativas[${ai}]=this.value"
-            style="flex:1;">
+            value="${alt.replace(/"/g,'&quot;')}" oninput="questoesData[${i}].alternativas[${ai}]=this.value"
+            style="flex:1;width:auto;">
         </div>`;
       });
     }
     if(q.tipo==="dissertativa"||q.tipo==="mista"){
-      html += `<small style="color:#aaa">Campo de resposta aberta (preenchido pelo aluno)</small>`;
+      html += `<small style="color:#aaa">✏️ Campo de resposta aberta (preenchido pelo aluno)</small>`;
     }
     html += `<button class="btn-sm btn-danger" onclick="removerQuestao(${i})">🗑 Remover</button></div>`;
   });
-  questoesEditor.innerHTML = html;
+  document.getElementById("questoesEditor").innerHTML = html;
 }
 
 function removerQuestao(i){
-  questoesEditor.splice(i,1);
+  questoesData.splice(i,1);
   renderQuestoesEditor();
 }
 
 function salvarProva(){
-  let nome = provaNome.value.trim();
-  let materia = provaMateria.value;
-  let bimestre = provaBimestre.value;
-  let data = provaData.value;
+  let nome = document.getElementById("provaNome").value.trim();
+  let materia = document.getElementById("provaMateria").value;
+  let bimestre = document.getElementById("provaBimestre").value;
+  let data = document.getElementById("provaData").value;
   if(!nome||!materia){ alert("Preencha nome e matéria!"); return; }
-  if(questoesEditor.length===0){ alert("Adicione ao menos uma questão!"); return; }
+  if(questoesData.length===0){ alert("Adicione ao menos uma questão!"); return; }
   let provas = getProvas();
   let id = Date.now().toString();
   provas.push({
     id, nome, materia, bimestre, data,
-    descricao: provaDescricao.value,
-    questoes: JSON.parse(JSON.stringify(questoesEditor))
+    descricao: document.getElementById("provaDescricao").value,
+    questoes: JSON.parse(JSON.stringify(questoesData))
   });
   salvarProvas(provas);
-  questoesEditor = [];
-  provaNome.value=""; provaDescricao.value=""; provaData.value="";
+  questoesData = [];
+  document.getElementById("provaNome").value="";
+  document.getElementById("provaDescricao").value="";
+  document.getElementById("provaData").value="";
+  document.getElementById("questoesEditor").innerHTML="";
   alert("Prova salva!");
   loadProvasCoord();
 }
@@ -775,7 +778,7 @@ function editarProvaCoord(id){
   provaNome.value=p.nome; provaMateria.value=p.materia;
   provaBimestre.value=p.bimestre; provaData.value=p.data;
   provaDescricao.value=p.descricao||"";
-  questoesEditor = JSON.parse(JSON.stringify(p.questoes));
+  questoesData = JSON.parse(JSON.stringify(p.questoes));
   renderQuestoesEditor();
   // Remove a antiga e salva ao clicar em Salvar
   excluirProva(id);
