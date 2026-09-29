@@ -44,18 +44,11 @@ th{background:rgba(0,0,0,0.4);}
 .prova-card h4{margin:0 0 6px;color:#00c6ff;}
 .prova-card p{margin:2px 0;font-size:13px;}
 .questao-box{background:rgba(0,0,0,0.3);border-radius:8px;padding:12px;margin:8px 0;}
-.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:bold;}
-.badge-verde{background:#0a0;color:#fff;}
-.badge-amarelo{background:#aa0;color:#fff;}
-.badge-cinza{background:#555;color:#fff;}
-.badge-azul{background:#00c6ff;color:#000;}
 .btn-sm{width:auto;padding:5px 12px;font-size:12px;margin:3px;}
 .btn-danger{background:#c00;color:#fff;}
 .btn-danger:hover{background:#f00;}
 .btn-success{background:#0a0;color:#fff;}
 .btn-success:hover{background:#0d0;}
-.correção-area{background:rgba(0,0,0,0.3);border-radius:8px;padding:12px;margin:8px 0;}
-hr{border-color:rgba(255,255,255,0.15);}
 .info-box{background:rgba(0,198,255,0.1);border:1px solid #00c6ff;border-radius:8px;padding:10px;margin:8px 0;font-size:13px;}
 textarea{background:#fff;color:#000;min-height:80px;resize:vertical;}
 select, input[type=number], input[type=text], input[type=password], input[type=date]{background:#fff;}
@@ -64,19 +57,30 @@ select, input[type=number], input[type=text], input[type=password], input[type=d
 #areaImpressao { display: none; }
 
 @media print {
-  body { background: white !important; color: black !important; font-family: Arial, sans-serif; }
-  .container, .box, #loginBox, #registerBox, #siteBox { display: none !important; }
-  #areaImpressao { display: block !important; color: black !important; background: white !important; padding: 0; }
+  body * { visibility: hidden; }
+  #areaImpressao, #areaImpressao * { visibility: visible; }
+  #areaImpressao { 
+    display: block !important; 
+    position: absolute; 
+    left: 0; 
+    top: 0; 
+    width: 100%; 
+    color: black !important; 
+    background: white !important; 
+    padding: 20px; 
+  }
   .cabecalho-impressao { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-  .cabecalho-impressao h2 { margin: 0; text-align: center; text-transform: uppercase; }
-  .cabecalho-impressao h3 { margin: 5px 0 15px 0; text-align: center; color: #333; }
-  .campos-aluno { border: 1px solid #000; padding: 10px; margin-bottom: 20px; font-size: 14px; }
+  .cabecalho-impressao h2 { margin: 0; text-align: center; text-transform: uppercase; font-size: 18px; }
+  .cabecalho-impressao h3 { margin: 5px 0 15px 0; text-align: center; color: #000; font-size: 16px; }
+  .campos-aluno { border: 1px solid #000; padding: 10px; margin-bottom: 20px; font-size: 13px; }
   .campos-aluno table { width: 100%; border: none; }
-  .campos-aluno td { border: none; text-align: left; padding: 4px; }
-  .questao-print { margin-bottom: 18px; page-break-inside: avoid; }
-  .questao-print p { margin: 4px 0; font-size: 14px; }
-  .questao-print img { max-width: 300px; display: block; margin: 8px 0; }
-  .alt-print { margin-left: 20px; font-size: 13.5px; margin-top: 3px; }
+  .campos-aluno td { border: none; text-align: left; padding: 4px; color: #000; }
+  .questao-print { margin-bottom: 18px; page-break-inside: avoid; color: #000; }
+  .questao-print p { margin: 4px 0; font-size: 13.5px; line-height: 1.4; }
+  .questao-print img { max-width: 100% !important; height: auto !important; display: block !important; margin: 10px 0 !important; visibility: visible !important; }
+  .alt-print { margin-left: 15px; font-size: 13px; margin-top: 4px; }
+  .colunas-container { display: flex; gap: 20px; margin-top: 8px; }
+  .coluna-box { flex: 1; border: 1px dashed #666; padding: 8px; border-radius: 4px; }
 }
 </style>
 </head>
@@ -106,38 +110,40 @@ select, input[type=number], input[type=text], input[type=password], input[type=d
 <div class="hidden" id="siteBox">
   <h2>📘 Portal Escolar</h2>
 
-  <!-- ADMIN -->
-  <div class="box hidden" id="adminBox">
-    <h3>Administrador</h3>
+  <!-- PAINEL GESTÃO (ADMIN / COORDENAÇÃO) -->
+  <div class="box hidden" id="gestaoBox">
+    <h3 id="gestaoTitulo">Painel de Gestão</h3>
     <div class="tabs">
-      <button class="tab-btn active" onclick="showAdminTab('boletim')">📋 Boletim</button>
-      <button class="tab-btn" onclick="showAdminTab('redacao')">✍️ Redação</button>
-      <button class="tab-btn" onclick="showAdminTab('correcao')">🔍 Correção de Provas</button>
-      <button class="tab-btn" onclick="showAdminTab('ranking')">🏆 Ranking</button>
-      <button class="tab-btn" onclick="showAdminTab('recuperacao')">📉 Recuperação</button>
+      <button class="tab-btn active" onclick="showGestaoTab('boletim')">📋 Boletim</button>
+      <button class="tab-btn" onclick="showGestaoTab('redacao')">✍️ Redação</button>
+      <button class="tab-btn" onclick="showGestaoTab('simulados')">📝 Criar Simulado</button>
+      <button class="tab-btn" onclick="showGestaoTab('listaAlunos')">🔑 Lista (Códigos)</button>
+      <button class="tab-btn" onclick="showGestaoTab('lancarSimulados')">🎯 Lançar Simulados</button>
+      <button class="tab-btn" onclick="showGestaoTab('ranking')">🏆 Ranking</button>
+      <button class="tab-btn" onclick="showGestaoTab('recuperacao')">📉 Recuperação</button>
     </div>
 
-    <!-- ABA BOLETIM ADMIN -->
+    <!-- ABA BOLETIM -->
     <div id="tab-boletim" class="tab-content active">
-      <select id="bimestreAdmin" onchange="carregarNotas()">
+      <select id="bimestreGestao" onchange="carregarNotasGestao()">
         <option value="1">1º Bimestre</option>
         <option value="2">2º Bimestre</option>
         <option value="3">3º Bimestre</option>
         <option value="4">4º Bimestre</option>
       </select>
-      <div id="userList"></div>
-      <h4 id="selectedUser"></h4>
-      <h4>Média Geral do Aluno: <span id="mediaAlunoAdmin">--</span></h4>
+      <div id="userListGestao"></div>
+      <h4 id="selectedUserGestao"></h4>
+      <h4>Média Geral do Aluno: <span id="mediaAlunoGestao">--</span></h4>
       <h4>📋 Chamada</h4>
-      <select id="presenca">
+      <select id="presencaGestao">
         <option value="Presente">Presente</option>
         <option value="Falta">Falta</option>
       </select>
       <div id="materiasInputs"></div>
-      <button onclick="salvarNotas()">Salvar / Atualizar</button>
+      <button id="btnSalvarBoletim" onclick="salvarNotasBoletim()">Salvar / Atualizar Notas</button>
     </div>
 
-    <!-- ABA REDAÇÃO ADMIN -->
+    <!-- ABA REDAÇÃO -->
     <div id="tab-redacao" class="tab-content">
       <h3>✍️ Correção de Redação por Competências</h3>
       <p>Selecione o aluno:</p>
@@ -147,49 +153,6 @@ select, input[type=number], input[type=text], input[type=password], input[type=d
         <div id="competenciasArea"></div>
         <div class="nota-final-red">Nota Final da Redação: <span id="notaFinalRedacao">0,00</span> / 10,00</div>
         <button onclick="salvarRedacao()">💾 Salvar Nota de Redação</button>
-      </div>
-    </div>
-
-    <!-- ABA CORREÇÃO DE PROVAS ADMIN -->
-    <div id="tab-correcao" class="tab-content">
-      <h3>🔍 Provas Enviadas para Correção</h3>
-      <div id="provasEnviadasAdmin"></div>
-    </div>
-
-    <!-- ABA RANKING -->
-    <div id="tab-ranking" class="tab-content">
-      <h3>🏆 Ranking Final</h3>
-      <div id="ranking"></div>
-    </div>
-
-    <!-- ABA RECUPERAÇÃO -->
-    <div id="tab-recuperacao" class="tab-content">
-      <h3>📉 Alunos em Recuperação</h3>
-      <div id="recuperacaoAdmin"></div>
-    </div>
-
-    <button onclick="logout()" style="margin-top:10px;">Sair</button>
-  </div>
-
-  <!-- COORDENAÇÃO -->
-  <div class="box hidden" id="coordBox">
-    <h3>👩‍💼 Coordenação</h3>
-    <div class="tabs">
-      <button class="tab-btn active" onclick="showCoordTab('alunos')">👥 Alunos</button>
-      <button class="tab-btn" onclick="showCoordTab('simulados')">📝 Criar Simulado</button>
-      <button class="tab-btn" onclick="showCoordTab('listaAlunos')">🔑 Lista (Códigos)</button>
-      <button class="tab-btn" onclick="showCoordTab('lancarSimulados')">🎯 Lançar Simulados</button>
-      <button class="tab-btn" onclick="showCoordTab('rankingCoord')">🏆 Ranking</button>
-      <button class="tab-btn" onclick="showCoordTab('recuperacaoCoord')">📉 Recuperação</button>
-    </div>
-
-    <!-- ABA ALUNOS COORD -->
-    <div id="tab-alunos" class="tab-content active">
-      <h4>Selecione um aluno para ver notas:</h4>
-      <div id="userListCoord"></div>
-      <div id="boletimCoordArea" class="hidden">
-        <h4>Boletim de: <span id="alunoCoordNome"></span></h4>
-        <div id="boletimCoordView"></div>
       </div>
     </div>
 
@@ -219,13 +182,13 @@ select, input[type=number], input[type=text], input[type=password], input[type=d
       <button onclick="salvarSimulado()" class="btn-success" style="margin-top:10px;">💾 Salvar Simulado</button>
       <hr>
       <h4>Simulados Cadastrados</h4>
-      <div id="listaSimuladosCoord"></div>
+      <div id="listaSimulados"></div>
     </div>
 
     <!-- ABA LISTA DE CÓDIGOS DE ALUNOS -->
     <div id="tab-listaAlunos" class="tab-content">
       <h3>🔑 Código Único dos Alunos (5 dígitos)</h3>
-      <p style="font-size:13px; color:#ccc;">Estes códigos fixos de 5 dígitos são gerados automaticamente e devem ser usados para localizar o aluno e realizar a correção rápida de simulados.</p>
+      <p style="font-size:13px; color:#ccc;">Estes códigos fixos de 5 dígitos são gerados automaticamente para localização rápida na correção de simulados.</p>
       <div id="tabelaListaCodigos"></div>
     </div>
 
@@ -258,16 +221,16 @@ select, input[type=number], input[type=text], input[type=password], input[type=d
       </div>
     </div>
 
-    <!-- ABA RANKING COORD -->
-    <div id="tab-rankingCoord" class="tab-content">
-      <h3>🏆 Ranking</h3>
-      <div id="rankingCoord"></div>
+    <!-- ABA RANKING -->
+    <div id="tab-ranking" class="tab-content">
+      <h3>🏆 Ranking Final</h3>
+      <div id="ranking"></div>
     </div>
 
-    <!-- ABA RECUPERAÇÃO COORD -->
-    <div id="tab-recuperacaoCoord" class="tab-content">
-      <h3>📉 Recuperação</h3>
-      <div id="recuperacaoCoord"></div>
+    <!-- ABA RECUPERAÇÃO -->
+    <div id="tab-recuperacao" class="tab-content">
+      <h3>📉 Alunos em Recuperação</h3>
+      <div id="recuperacao"></div>
     </div>
 
     <button onclick="logout()" style="margin-top:10px;">Sair</button>
@@ -280,7 +243,6 @@ select, input[type=number], input[type=text], input[type=password], input[type=d
     <div class="tabs">
       <button class="tab-btn active" onclick="showAlunoTab('boletimAluno')">📋 Boletim</button>
       <button class="tab-btn" onclick="showAlunoTab('provasAluno')">📝 Provas</button>
-      <button class="tab-btn" onclick="showAlunoTab('historicoAluno')">📊 Histórico de Provas</button>
     </div>
 
     <!-- ABA BOLETIM ALUNO -->
@@ -291,44 +253,11 @@ select, input[type=number], input[type=text], input[type=password], input[type=d
 
     <!-- ABA PROVAS ALUNO -->
     <div id="tab-provasAluno" class="tab-content">
-      <h4>📝 Provas Disponíveis</h4>
+      <h4>📝 Simulados Realizados</h4>
       <div id="provasDisponiveisAluno"></div>
-      <h4>✅ Provas Concluídas</h4>
-      <div id="provasConcluidas"></div>
-      <h4>⏳ Aguardando Correção</h4>
-      <div id="provasAguardando"></div>
-    </div>
-
-    <!-- ABA HISTÓRICO ALUNO -->
-    <div id="tab-historicoAluno" class="tab-content">
-      <h4>📊 Histórico de Provas</h4>
-      <div id="historicoProvasAluno"></div>
     </div>
 
     <button onclick="logout()">Sair</button>
-  </div>
-
-  <!-- MODAL FAZER PROVA -->
-  <div class="box hidden" id="provaModal">
-    <h3>📝 <span id="provaModalNome"></span></h3>
-    <div id="provaModalQuestoes"></div>
-    <button onclick="salvarProvaAluno(false)">💾 Salvar Rascunho</button>
-    <button onclick="salvarProvaAluno(true)" class="btn-success">📤 Enviar Prova</button>
-    <button onclick="fecharProvaModal()">✖ Cancelar</button>
-  </div>
-
-  <!-- MODAL CORRIGIR PROVA (ADMIN) -->
-  <div class="box hidden" id="correcaoModal">
-    <h3>🔍 Corrigir Prova: <span id="correcaoNomeProva"></span></h3>
-    <h4>Aluno: <span id="correcaoNomeAluno"></span></h4>
-    <div id="correcaoQuestoesView"></div>
-    <h4>Nota Final (0-10):</h4>
-    <input id="notaCorrecao" type="number" min="0" max="10" step="0.1" style="width:120px;">
-    <h4>Comentário (opcional):</h4>
-    <textarea id="comentarioCorrecao"></textarea>
-    <button onclick="salvarCorrecao()" class="btn-success">💾 Salvar Correção</button>
-    <button id="btnLancarBoletim" onclick="lancarNoBoletim()" class="hidden btn-success">📋 Adicionar ao Boletim</button>
-    <button onclick="fecharCorrecaoModal()">✖ Fechar</button>
   </div>
 
 </div><!-- /siteBox -->
@@ -347,67 +276,28 @@ const COORD_PASS = "10";
 const materias = ["Português","Matemática","Ciências","História","Geografia","Inglês","Educação Física"];
 
 const competencias = [
-  {
-    nome:"C1 – Adequação Linguística", max:2.0,
-    criterios:[
-      {nome:"Acentuação",val:0.2},{nome:"Ortografia",val:0.2},{nome:"Pontuação",val:0.3},
-      {nome:"Concordância verbal",val:0.3},{nome:"Concordância nominal",val:0.2},
-      {nome:"Regência e crase",val:0.2},{nome:"Uso de maiúsculas/minúsculas",val:0.1},
-      {nome:"Estrutura das frases",val:0.3},{nome:"Uso correto dos tempos verbais",val:0.2}
-    ]
-  },
-  {
-    nome:"C2 – Compreensão do Tema", max:2.0,
-    criterios:[
-      {nome:"Compreendeu o tema",val:0.5},{nome:"Manteve-se no tema",val:0.4},
-      {nome:"Desenvolveu a ideia principal",val:0.4},{nome:"Apresentou argumentos",val:0.4},
-      {nome:"Não fugiu do tipo dissertativo",val:0.3}
-    ]
-  },
-  {
-    nome:"C3 – Argumentação", max:2.0,
-    criterios:[
-      {nome:"Argumentos relevantes",val:0.5},{nome:"Explicou os argumentos",val:0.4},
-      {nome:"Organização lógica das ideias",val:0.5},{nome:"Progressão textual",val:0.3},
-      {nome:"Evitou repetições excessivas",val:0.3}
-    ]
-  },
-  {
-    nome:"C4 – Coesão Textual", max:2.0,
-    criterios:[
-      {nome:"Uso de conectivos",val:0.6},{nome:"Ligação entre frases",val:0.5},
-      {nome:"Ligação entre períodos",val:0.3},{nome:"Referenciação adequada",val:0.3},
-      {nome:"Fluidez do texto",val:0.3}
-    ]
-  },
-  {
-    nome:"C5 – Proposta de Intervenção", max:2.0,
-    criterios:[
-      {nome:"Apresenta solução",val:0.5},{nome:"Agente responsável",val:0.4},
-      {nome:"Ação proposta",val:0.4},{nome:"Meio/modo de execução",val:0.3},
-      {nome:"Finalidade da ação",val:0.4}
-    ]
-  }
+  { nome:"C1 – Adequação Linguística", max:2.0, criterios:[{nome:"Acentuação",val:0.2},{nome:"Ortografia",val:0.2},{nome:"Pontuação",val:0.3},{nome:"Concordância verbal",val:0.3},{nome:"Concordância nominal",val:0.2},{nome:"Regência e crase",val:0.2},{nome:"Uso de maiúsculas/minúsculas",val:0.1},{nome:"Estrutura das frases",val:0.3},{nome:"Uso correto dos tempos verbais",val:0.2}] },
+  { nome:"C2 – Compreensão do Tema", max:2.0, criterios:[{nome:"Compreendeu o tema",val:0.5},{nome:"Manteve-se no tema",val:0.4},{nome:"Desenvolveu a ideia principal",val:0.4},{nome:"Apresentou argumentos",val:0.4},{nome:"Não fugiu do tipo dissertativo",val:0.3}] },
+  { nome:"C3 – Argumentação", max:2.0, criterios:[{nome:"Argumentos relevantes",val:0.5},{nome:"Explicou os argumentos",val:0.4},{nome:"Organização lógica das ideias",val:0.5},{nome:"Progressão textual",val:0.3},{nome:"Evitou repetições excessivas",val:0.3}] },
+  { nome:"C4 – Coesão Textual", max:2.0, criterios:[{nome:"Uso de conectivos",val:0.6},{nome:"Ligação entre frases",val:0.5},{nome:"Ligação entre períodos",val:0.3},{nome:"Referenciação adequada",val:0.3},{nome:"Fluidez do texto",val:0.3}] },
+  { nome:"C5 – Proposta de Intervenção", max:2.0, criterios:[{nome:"Apresenta solução",val:0.5},{nome:"Agente responsável",val:0.4},{nome:"Ação proposta",val:0.4},{nome:"Meio/modo de execução",val:0.3},{nome:"Finalidade da ação",val:0.4}] }
 ];
 
 let currentUser = "", isAdmin = false, isCoord = false, selectedAluno = "";
 let simuladoQuestoesData = [];
-let provaAtualId = null;
 let _alunoEncontradoLancamento = null;
 
-// ===================== INICIALIZAÇÃO E CÓDIGOS FIXOS =====================
+// ===================== INICIALIZAÇÃO DE CÓDIGOS =====================
 function inicializarCodigosAlunos(){
   let alunosKeys = Object.keys(localStorage).filter(k => k.startsWith("user_"));
   let codigosExistentes = new Set();
   
-  // Primeiro passa coletando os códigos que já existem
   alunosKeys.forEach(k => {
     let username = k.replace("user_", "");
     let cod = localStorage.getItem("cod_user_" + username);
     if(cod) codigosExistentes.add(cod);
   });
 
-  // Atribui novo código único de 5 dígitos para quem não tem
   alunosKeys.forEach(k => {
     let username = k.replace("user_", "");
     if(!localStorage.getItem("cod_user_" + username)){
@@ -432,7 +322,7 @@ function buscarAlunoPorCodigoStorage(codigo){
   return null;
 }
 
-// ===================== NAVEGAÇÃO =====================
+// ===================== LOGIN E NAVEGAÇÃO =====================
 function showRegister(){ loginBox.classList.add("hidden"); registerBox.classList.remove("hidden"); }
 function backLogin(){ registerBox.classList.add("hidden"); loginBox.classList.remove("hidden"); }
 
@@ -460,36 +350,25 @@ function enter(tipo, u){
   loginBox.classList.add("hidden");
   registerBox.classList.add("hidden");
   siteBox.classList.remove("hidden");
-  if(tipo==="admin") loadAdmin();
-  else if(tipo==="coord") loadCoord();
+  
+  if(isAdmin || isCoord) loadGestao();
   else loadAluno();
 }
 
 function logout(){ location.reload(); }
 
-// ===================== ABAS =====================
-function showAdminTab(tab){
-  document.querySelectorAll('#adminBox .tab-content').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('#adminBox .tab-btn').forEach(b=>b.classList.remove('active'));
+function showGestaoTab(tab){
+  document.querySelectorAll('#gestaoBox .tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#gestaoBox .tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   event.target.classList.add('active');
-  if(tab==='ranking') gerarRanking();
-  if(tab==='recuperacao') gerarRecuperacao();
-  if(tab==='redacao') loadRedacaoAdmin();
-  if(tab==='correcao') carregarProvasEnviadas();
-}
 
-function showCoordTab(tab){
-  document.querySelectorAll('#coordBox .tab-content').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('#coordBox .tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+tab).classList.add('active');
-  event.target.classList.add('active');
-  if(tab==='simulados') loadSimuladosCoord();
+  if(tab==='simulados') loadSimulados();
   if(tab==='listaAlunos') renderListaCodigos();
   if(tab==='lancarSimulados') prepareTabLancarSimulados();
-  if(tab==='rankingCoord') gerarRankingCoord();
-  if(tab==='recuperacaoCoord') gerarRecuperacaoCoord();
-  if(tab==='alunos') loadAlunosCoord();
+  if(tab==='ranking') gerarRanking();
+  if(tab==='recuperacao') gerarRecuperacao();
+  if(tab==='redacao') loadRedacao();
 }
 
 function showAlunoTab(tab){
@@ -497,46 +376,56 @@ function showAlunoTab(tab){
   document.querySelectorAll('#userBox .tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   event.target.classList.add('active');
-  if(tab==='provasAluno') loadProvasAluno();
-  if(tab==='historicoAluno') loadHistoricoAluno();
 }
 
-// ===================== ADMIN =====================
-function loadAdmin(){
-  adminBox.classList.remove("hidden");
+// ===================== PAINEL DE GESTÃO (ADMIN / COORDENAÇÃO) =====================
+function loadGestao(){
+  gestaoBox.classList.remove("hidden");
   userBox.classList.add("hidden");
-  coordBox.classList.add("hidden");
+  gestaoTitulo.innerText = isAdmin ? "👨‍🏫 Painel Administrador (Acesso Total)" : "👩‍💼 Painel da Coordenação";
 
+  // Preenche Matérias no formulário de Simulado
+  let selSim = document.getElementById("simuladoMateria");
+  selSim.innerHTML = '<option value="">-- Selecione a Matéria * --</option>';
+  materias.forEach(m=>{ selSim.innerHTML += `<option value="${m}">${m}</option>`; });
+
+  // Preenche Entradas do Boletim
   materiasInputs.innerHTML = "";
   materias.forEach(m=>{
     materiasInputs.innerHTML += `
       <h4>${m}</h4>
-      <input id="${m}_sim" type="number" step="0.1" min="0" max="10" placeholder="Simulado (0-10)">
-      <input id="${m}_vis" type="number" step="0.1" min="0" max="2" placeholder="Vistos (0-2)">
-      <input id="${m}_prova" type="number" step="0.1" min="0" max="8" placeholder="Prova (0-8)">
-      <small style="color:#aaa">Redação: preenchida automaticamente pela área de competências</small>
-      <input id="${m}_red_display" type="number" step="0.1" min="0" max="10" placeholder="Redação (auto)" readonly style="background:#ddd;cursor:not-allowed;">
+      <input id="${m}_sim" type="number" step="0.1" min="0" max="10" placeholder="Simulado (0-10)" ${isCoord ? 'readonly style="background:#eee;cursor:not-allowed;"' : ''}>
+      <input id="${m}_vis" type="number" step="0.1" min="0" max="2" placeholder="Vistos (0-2)" ${isCoord ? 'readonly style="background:#eee;cursor:not-allowed;"' : ''}>
+      <input id="${m}_prova" type="number" step="0.1" min="0" max="8" placeholder="Prova (0-8)" ${isCoord ? 'readonly style="background:#eee;cursor:not-allowed;"' : ''}>
+      <input id="${m}_red_display" type="number" step="0.1" min="0" max="10" placeholder="Redação (auto)" readonly style="background:#eee;cursor:not-allowed;">
     `;
   });
 
-  userList.innerHTML = "";
+  if(isCoord){
+    btnSalvarBoletim.style.display = "none";
+  } else {
+    btnSalvarBoletim.style.display = "block";
+  }
+
+  // Lista de Alunos no Boletim
+  userListGestao.innerHTML = "";
   Object.keys(localStorage).filter(k=>k.startsWith("user_")).forEach(u=>{
     let n = u.replace("user_","");
     let b = document.createElement("button");
     b.innerText = n; b.className = "btn-sm";
-    b.onclick = ()=>{ selectedAluno=n; selectedUser.innerText="Aluno: "+n; carregarNotas(); };
-    userList.appendChild(b);
+    b.onclick = ()=>{ selectedAluno=n; selectedUserGestao.innerText="Aluno: "+n; carregarNotasGestao(); };
+    userListGestao.appendChild(b);
   });
 
   gerarRanking();
   gerarRecuperacao();
 }
 
-function carregarNotas(){
+function carregarNotasGestao(){
   if(!selectedAluno) return;
   let d = JSON.parse(localStorage.getItem("boletim_"+selectedAluno)||"{}");
-  let b = bimestreAdmin.value;
-  presenca.value = d[b]?.presenca||"Presente";
+  let b = bimestreGestao.value;
+  presencaGestao.value = d[b]?.presenca||"Presente";
 
   let redNota = getNotaRedacao(selectedAluno);
 
@@ -544,7 +433,7 @@ function carregarNotas(){
   for(let i=1;i<=4;i++){
     if(d[i]?.mediaBimestre){ soma+=+d[i].mediaBimestre; cont++; }
   }
-  mediaAlunoAdmin.innerText = cont ? (soma/cont).toFixed(2) : "--";
+  mediaAlunoGestao.innerText = cont ? (soma/cont).toFixed(2) : "--";
 
   materias.forEach(m=>{
     let x = d[b]?.[m];
@@ -560,12 +449,13 @@ function calcularMedia(red, sim, vis, prova){
   return (soma / 3).toFixed(2);
 }
 
-function salvarNotas(){
+function salvarNotasBoletim(){
+  if(isCoord){ alert("A coordenação não possui permissão para alterar notas do boletim manualmente!"); return; }
   if(!selectedAluno){ alert("Selecione um aluno!"); return; }
-  let b = bimestreAdmin.value;
+  let b = bimestreGestao.value;
   let d = JSON.parse(localStorage.getItem("boletim_"+selectedAluno)||"{}");
   if(!d[b]) d[b] = {};
-  d[b].presenca = presenca.value;
+  d[b].presenca = presencaGestao.value;
   let soma=0, cont=0;
   let redNota = getNotaRedacao(selectedAluno);
 
@@ -575,7 +465,6 @@ function salvarNotas(){
     let prova = document.getElementById(m+"_prova").value !== "" ? +document.getElementById(m+"_prova").value : 0;
     let red = redNota!==null ? redNota : (+document.getElementById(m+"_red_display").value||0);
     
-    // Se houve preenchimento
     let prev = d[b][m] || {};
     d[b][m] = { 
       ...prev,
@@ -590,7 +479,7 @@ function salvarNotas(){
   alert("Notas salvas!");
   gerarRanking();
   gerarRecuperacao();
-  carregarNotas();
+  carregarNotasGestao();
 }
 
 // ===================== REDAÇÃO =====================
@@ -600,7 +489,7 @@ function getNotaRedacao(aluno){
   return parseFloat(JSON.parse(r).notaFinal)||0;
 }
 
-function loadRedacaoAdmin(){
+function loadRedacao(){
   userListRedacao.innerHTML = "";
   Object.keys(localStorage).filter(k=>k.startsWith("user_")).forEach(u=>{
     let n = u.replace("user_","");
@@ -666,6 +555,11 @@ function salvarRedacao(){
 }
 
 // ===================== RECUPERAÇÃO / RANKING =====================
+function notaHTML(v){
+  if(v==="--" || v===undefined) return "--";
+  return `<span class="${v<6?'reprovado':''}">${v}</span>`;
+}
+
 function gerarRecuperacao(){
   let html = "";
   Object.keys(localStorage).filter(k=>k.startsWith("user_")).forEach(u=>{
@@ -679,12 +573,7 @@ function gerarRecuperacao(){
     }
     if(rec.length) html += `<p><b>${nome}</b>: ${rec.join(", ")}</p>`;
   });
-  recuperacaoAdmin.innerHTML = html||"Nenhum aluno em recuperação 🎉";
-}
-
-function notaHTML(v){
-  if(v==="--" || v===undefined) return "--";
-  return `<span class="${v<6?'reprovado':''}">${v}</span>`;
+  recuperacao.innerHTML = html||"Nenhum aluno em recuperação 🎉";
 }
 
 function gerarRanking(){
@@ -698,85 +587,9 @@ function gerarRanking(){
     return {nome:n, media:c?(s/c):0};
   }).sort((a,b)=>b.media-a.media);
 
-  ranking.innerHTML = alunos.slice(0,3)
+  ranking.innerHTML = alunos.slice(0,5)
     .map((a,i)=>`<p>${i+1}º - ${a.nome} (${a.media.toFixed(2)})</p>`)
     .join("");
-}
-
-// ===================== COORDENAÇÃO =====================
-function loadCoord(){
-  coordBox.classList.remove("hidden");
-  adminBox.classList.add("hidden");
-  userBox.classList.add("hidden");
-  
-  let sel = document.getElementById("simuladoMateria");
-  sel.innerHTML = '<option value="">-- Selecione a Matéria * --</option>';
-  materias.forEach(m=>{ sel.innerHTML += `<option value="${m}">${m}</option>`; });
-  
-  loadAlunosCoord();
-}
-
-function loadAlunosCoord(){
-  userListCoord.innerHTML = "";
-  Object.keys(localStorage).filter(k=>k.startsWith("user_")).forEach(u=>{
-    let n = u.replace("user_","");
-    let btn = document.createElement("button");
-    btn.innerText = n; btn.className = "btn-sm";
-    btn.onclick = ()=>{ verBoletimCoord(n); };
-    userListCoord.appendChild(btn);
-  });
-}
-
-function verBoletimCoord(aluno){
-  boletimCoordArea.classList.remove("hidden");
-  alunoCoordNome.innerText = aluno;
-  let d = JSON.parse(localStorage.getItem("boletim_"+aluno)||"{}");
-  let html="";
-  for(let b=1;b<=4;b++){
-    html += `<h4>${b}º Bimestre — Média: ${notaHTML(d[b]?.mediaBimestre||"--")}</h4>
-    <table><tr><th>Matéria</th><th>Red</th><th>Sim</th><th>Vistos</th><th>Prova</th><th>Média</th></tr>`;
-    materias.forEach(m=>{
-      let x = d[b]?.[m];
-      let tagSim = x?.simCalculada!==undefined && x?.sim!==undefined && x.sim !== x.simCalculada 
-        ? `${x.sim} <small style="color:orange;" title="Calculado originalmente: ${x.simCalculada}">(ajustado)</small>` 
-        : (x?.sim??"--");
-      
-      html += `<tr><td>${m}</td><td>${x?.red??"--"}</td><td>${tagSim}</td>
-        <td>${x?.vis??"--"}</td><td>${x?.prova??"--"}</td>
-        <td>${notaHTML(x?.media??"--")}</td></tr>`;
-    });
-    html += `</table>`;
-  }
-  boletimCoordView.innerHTML = html;
-}
-
-function gerarRankingCoord(){
-  let alunos = Object.keys(localStorage).filter(k=>k.startsWith("user_")).map(u=>{
-    let n = u.replace("user_","");
-    let d = JSON.parse(localStorage.getItem("boletim_"+n)||"{}");
-    let s=0,c=0;
-    for(let b=1;b<=4;b++){
-      if(d[b]?.mediaBimestre && d[b].mediaBimestre!=="--"){ s+=+d[b].mediaBimestre; c++; }
-    }
-    return {nome:n,media:c?(s/c):0};
-  }).sort((a,b)=>b.media-a.media);
-  rankingCoord.innerHTML = alunos.map((a,i)=>`<p>${i+1}º - ${a.nome} (${a.media.toFixed(2)})</p>`).join("");
-}
-
-function gerarRecuperacaoCoord(){
-  let html="";
-  Object.keys(localStorage).filter(k=>k.startsWith("user_")).forEach(u=>{
-    let nome = u.replace("user_","");
-    let d = JSON.parse(localStorage.getItem("boletim_"+nome)||"{}");
-    let rec=[];
-    for(let b=1;b<=4;b++){
-      materias.forEach(m=>{
-        if(d[b]?.[m]?.media<6 && !rec.includes(m)) rec.push(m);
-      });
-    }
-    if(rec.length) html += `<p><b>${nome}</b>: ${rec.join(", ")}</p>`;
-  });
-  recuperacaoCoord.innerHTML = html||"Nenum aluno em recuperação 🎉";
 }
 
 function renderListaCodigos(){
@@ -791,16 +604,18 @@ function renderListaCodigos(){
   tabelaListaCodigos.innerHTML = html;
 }
 
-// ===================== SISTEMA DE SIMULADOS (CRIAR, EDITAR, IMPRIMIR) =====================
+// ===================== SISTEMA DE SIMULADOS =====================
 function getSimulados(){ return JSON.parse(localStorage.getItem("simulados")||"[]"); }
 function salvarSimuladosStorage(s){ localStorage.setItem("simulados",JSON.stringify(s)); }
 
 function adicionarQuestaoSimulado(){
-  if(simuladoQuestoesData.length >= 50){ alert("Limite máximo de 50 questões por simulado atingido!"); return; }
+  if(simuladoQuestoesData.length >= 50){ alert("Limite máximo de 50 questões atingido!"); return; }
   simuladoQuestoesData.push({
-    tipo: "multipla_4", // multipla_4 (A-D), multipla_5 (A-E), vf (Verdadeiro/Falso)
+    tipo: "multipla_4", 
     enunciado: "",
     alternativas: ["", "", "", ""],
+    colunaA: ["", ""],
+    colunaB: ["", ""],
     correta: 0,
     valor: 1.0,
     imagemUrl: ""
@@ -826,10 +641,11 @@ function renderQuestoesSimuladoEditor(){
         <option value="multipla_4" ${q.tipo==="multipla_4"?"selected":""}>Múltipla Escolha (A, B, C, D)</option>
         <option value="multipla_5" ${q.tipo==="multipla_5"?"selected":""}>Múltipla Escolha (A, B, C, D, E)</option>
         <option value="vf" ${q.tipo==="vf"?"selected":""}>Verdadeiro ou Falso (V/F)</option>
+        <option value="colunas" ${q.tipo==="colunas"?"selected":""}>Associar Colunas (Coluna 1 x Coluna 2)</option>
       </select>
 
       <textarea placeholder="Enunciado da questão *" oninput="simuladoQuestoesData[${i}].enunciado=this.value">${q.enunciado}</textarea>
-      <input type="text" placeholder="URL da Imagem (Opcional)" value="${q.imagemUrl||""}" oninput="simuladoQuestoesData[${i}].imagemUrl=this.value">`;
+      <input type="text" placeholder="URL ou Imagem (Ex: cole a imagem aqui ou cole o link) *" value="${q.imagemUrl||""}" oninput="simuladoQuestoesData[${i}].imagemUrl=this.value">`;
 
     if(q.tipo==="multipla_4" || q.tipo==="multipla_5"){
       html += `<p style="margin:5px 0 2px 0; font-size:12px;">Alternativas e Resposta Correta:</p>`;
@@ -848,6 +664,15 @@ function renderQuestoesSimuladoEditor(){
         <option value="0" ${q.correta===0?"selected":""}>Verdadeiro (V)</option>
         <option value="1" ${q.correta===1?"selected":""}>Falso (F)</option>
       </select>`;
+    } else if(q.tipo==="colunas"){
+      html += `<p style="margin:5px 0 2px 0; font-size:12px;">Pares Correspondentes (Coluna A -> Coluna B):</p>`;
+      q.colunaA.forEach((itemA, ci)=>{
+        html += `<div style="display:flex; gap:5px; margin:3px 0;">
+          <input type="text" placeholder="Item Coluna A (${ci+1}) *" value="${itemA.replace(/"/g,'&quot;')}" oninput="simuladoQuestoesData[${i}].colunaA[${ci}]=this.value" style="flex:1;">
+          <input type="text" placeholder="Item Correspondente B (${ci+1}) *" value="${(q.colunaB[ci]||'').replace(/"/g,'&quot;')}" oninput="simuladoQuestoesData[${i}].colunaB[${ci}]=this.value" style="flex:1;">
+        </div>`;
+      });
+      html += `<button class="btn-sm" onclick="addLinhaColuna(${i})">➕ Adicionar Par de Coluna</button>`;
     }
 
     html += `<button class="btn-sm btn-danger" onclick="removerQuestaoSimulado(${i})" style="margin-top:8px;">🗑 Remover Questão</button></div>`;
@@ -858,19 +683,19 @@ function renderQuestoesSimuladoEditor(){
   document.getElementById("questoesSimuladoEditor").innerHTML = html;
 }
 
+function addLinhaColuna(index){
+  simuladoQuestoesData[index].colunaA.push("");
+  simuladoQuestoesData[index].colunaB.push("");
+  renderQuestoesSimuladoEditor();
+}
+
 function mudarTipoQuestaoSimulado(index, novoTipo){
   let q = simuladoQuestoesData[index];
   q.tipo = novoTipo;
-  if(novoTipo === "multipla_4"){
-    q.alternativas = ["", "", "", ""];
-    q.correta = 0;
-  } else if(novoTipo === "multipla_5"){
-    q.alternativas = ["", "", "", "", ""];
-    q.correta = 0;
-  } else if(novoTipo === "vf"){
-    q.alternativas = ["Verdadeiro", "Falso"];
-    q.correta = 0;
-  }
+  if(novoTipo === "multipla_4"){ q.alternativas = ["", "", "", ""]; q.correta = 0; } 
+  else if(novoTipo === "multipla_5"){ q.alternativas = ["", "", "", "", ""]; q.correta = 0; } 
+  else if(novoTipo === "vf"){ q.alternativas = ["Verdadeiro", "Falso"]; q.correta = 0; }
+  else if(novoTipo === "colunas"){ q.colunaA = ["", ""]; q.colunaB = ["", ""]; }
   renderQuestoesSimuladoEditor();
 }
 
@@ -886,22 +711,10 @@ function salvarSimulado(){
   let data = document.getElementById("simuladoData").value;
   let descricao = document.getElementById("simuladoDescricao").value;
 
-  if(!nome || !materia){ alert("Preencha obrigatoriamente o nome e a matéria do simulado!"); return; }
+  if(!nome || !materia){ alert("Preencha obrigatoriamente o nome e a matéria!"); return; }
   if(simuladoQuestoesData.length === 0){ alert("Adicione pelo menos uma questão ao simulado!"); return; }
 
-  // Validação de campos das questões
-  for(let idx=0; idx<simuladoQuestoesData.length; idx++){
-    let q = simuladoQuestoesData[idx];
-    if(!q.enunciado.trim()){ alert(`A questão ${idx+1} está sem enunciado!`); return; }
-    if(q.tipo.startsWith("multipla")){
-      for(let aIdx=0; aIdx<q.alternativas.length; aIdx++){
-        if(!q.alternativas[aIdx].trim()){ alert(`A alternativa ${String.fromCharCode(65+aIdx)} da questão ${idx+1} está em branco!`); return; }
-      }
-    }
-  }
-
   let totalVal = simuladoQuestoesData.reduce((acc, curr)=> acc + (parseFloat(curr.valor)||0), 0);
-
   let simulados = getSimulados();
   let id = Date.now().toString();
 
@@ -918,10 +731,10 @@ function salvarSimulado(){
   document.getElementById("simuladoData").value="";
   renderQuestoesSimuladoEditor();
   alert("Simulado salvo com sucesso!");
-  loadSimuladosCoord();
+  loadSimulados();
 }
 
-function loadSimuladosCoord(){
+function loadSimulados(){
   let simulados = getSimulados();
   let html="";
   simulados.forEach(s=>{
@@ -931,21 +744,21 @@ function loadSimuladosCoord(){
       <p>${s.descricao||""}</p>
       <p>${s.questoes.length} questão(ões)</p>
       <button class="btn-sm" onclick="imprimirSimulado('${s.id}')">🖨️ Imprimir Simulado</button>
-      <button class="btn-sm" onclick="editarSimuladoCoord('${s.id}')">✏️ Editar</button>
+      <button class="btn-sm" onclick="editarSimulado('${s.id}')">✏️ Editar</button>
       <button class="btn-sm btn-danger" onclick="excluirSimulado('${s.id}')">🗑 Excluir</button>
     </div>`;
   });
-  listaSimuladosCoord.innerHTML = html||"Nenhum simulado cadastrado.";
+  listaSimulados.innerHTML = html||"Nenhum simulado cadastrado.";
 }
 
 function excluirSimulado(id){
   if(!confirm("Tem certeza que deseja excluir este simulado?")) return;
   let simulados = getSimulados().filter(s=>s.id!==id);
   salvarSimuladosStorage(simulados);
-  loadSimuladosCoord();
+  loadSimulados();
 }
 
-function editarSimuladoCoord(id){
+function editarSimulado(id){
   let s = getSimulados().find(x=>x.id===id);
   if(!s) return;
   document.getElementById("simuladoNome").value = s.nome;
@@ -980,7 +793,7 @@ function imprimirSimulado(id){
           <td><b>Data:</b> ${s.data||"____/____/________"}</td>
         </tr>
         <tr>
-          <td colspan="2"><b>Instruções:</b> ${s.descricao||"Responda a todas as questões atentamente no folheto de respostas."}</td>
+          <td colspan="2"><b>Instruções:</b> ${s.descricao||"Responda a todas as questões atentamente."}</td>
         </tr>
         <tr>
           <td colspan="2"><b>Valor Total:</b> ${s.valorTotal.toFixed(2)} pontos &nbsp; | &nbsp; <b>Nota Obtida:</b> _________</td>
@@ -1005,6 +818,22 @@ function imprimirSimulado(id){
     } else if(q.tipo === "vf"){
       html += `<div class="alt-print">( &nbsp; ) Verdadeiro (V)</div>`;
       html += `<div class="alt-print">( &nbsp; ) Falso (F)</div>`;
+    } else if(q.tipo === "colunas"){
+      // Gera versão embaralhada da coluna B
+      let colBEmbaralhada = q.colunaB.map((texto, index) => ({ texto, orgaoIndex: index + 1 }));
+      colBEmbaralhada.sort(() => 0.5 - Math.random());
+
+      html += `<div class="colunas-container">
+        <div class="coluna-box">
+          <b>Coluna 1</b><br>`;
+      q.colunaA.forEach((itemA, ai)=>{
+        html += `<div><b>(${ai+1})</b> ${itemA}</div>`;
+      });
+      html += `</div><div class="coluna-box"><b>Coluna 2</b><br>`;
+      colBEmbaralhada.forEach((itemB)=>{
+        html += `<div>( &nbsp; &nbsp; ) ${itemB.texto}</div>`;
+      });
+      html += `</div></div>`;
     }
 
     html += `</div>`;
@@ -1014,7 +843,7 @@ function imprimirSimulado(id){
   window.print();
 }
 
-// ===================== CORREÇÃO E LANÇAMENTO RÁPIDO DE SIMULADOS =====================
+// ===================== CORREÇÃO E LANÇAMENTO RÁPIDO =====================
 function prepareTabLancarSimulados(){
   let simulados = getSimulados();
   let sel = document.getElementById("lancarSimuladoSelect");
@@ -1040,41 +869,28 @@ function buscarAlunoPorCodigo(){
   if(!aluno){ alert("Nenhum aluno encontrado com este código!"); resetFormLancamento(); return; }
 
   let simId = lancarSimuladoSelect.value;
-  if(!simId){ alert("Selecione um simulado antes de buscar o aluno!"); return; }
+  if(!simId){ alert("Selecione um simulado antes de buscar!"); return; }
 
   _alunoEncontradoLancamento = aluno;
   alunoIdentificadoNome.innerText = aluno;
   alunoIdentificadoCodigo.innerText = cod;
 
-  // Verifica se já tem nota registrada para este simulado
   let s = getSimulados().find(x=>x.id===simId);
   let d = JSON.parse(localStorage.getItem("boletim_"+aluno)||"{}");
   let notaAnterior = d[s.bimestre]?.[s.materia]?.sim;
   
-  if(notaAnterior !== undefined){
-    infoStatusLancamento.innerText = `⚠️ Este aluno já possui nota lançada neste simulado (${notaAnterior} pts). O novo cálculo sobrescreverá o registro.`;
-  } else {
-    infoStatusLancamento.innerText = `✨ Primeira correção deste simulado para o aluno.`;
-  }
+  infoStatusLancamento.innerText = notaAnterior !== undefined 
+    ? `⚠️ Este aluno já possui nota lançada neste simulado (${notaAnterior} pts). O novo cálculo atualizará o registro.`
+    : `✨ Primeira correção deste simulado para o aluno.`;
 
-  // Carrega lista simplificada de gabarito para marcar
   let html = "";
   s.questoes.forEach((q, i) => {
     html += `<div class="crit-row" style="background:rgba(255,255,255,0.05); padding:8px; border-radius:6px;">
-      <label><b>Q${i+1}</b> (${q.tipo === "vf" ? "V/F" : "A-" + String.fromCharCode(64 + q.alternativas.length)}) - Valor: ${q.valor}pt</label>
+      <label><b>Q${i+1}</b> - Valor: ${q.valor}pt</label>
       <select id="resp_aluno_${i}" style="width:180px;">
-        <option value="-1">Em Branco (0pt)</option>`;
-    
-    if(q.tipo.startsWith("multipla")){
-      q.alternativas.forEach((_, ai) => {
-        html += `<option value="${ai}">Opção ${String.fromCharCode(65+ai)}</option>`;
-      });
-    } else if(q.tipo === "vf"){
-      html += `<option value="0">Verdadeiro (V)</option>`;
-      html += `<option value="1">Falso (F)</option>`;
-    }
-
-    html += `</select></div>`;
+        <option value="0">❌ Errou / Em Branco (0pt)</option>
+        <option value="1">✅ Acertou (${q.valor}pt)</option>
+      </select></div>`;
   });
 
   questoesFormLancamento.innerHTML = html;
@@ -1088,23 +904,14 @@ function calcularELancarSimulado(){
   if(!s) return;
 
   let pontosObtidos = 0;
-  let acertos = 0;
-  let errosOuBranco = 0;
-
   s.questoes.forEach((q, i) => {
     let el = document.getElementById(`resp_aluno_${i}`);
-    let resp = el ? parseInt(el.value) : -1;
-    if(resp === q.correta){
+    if(el && el.value === "1"){
       pontosObtidos += (parseFloat(q.valor)||0);
-      acertos++;
-    } else {
-      errosOuBranco++;
     }
   });
 
   let notaFinalCalc = parseFloat(pontosObtidos.toFixed(2));
-
-  // Lança automaticamente no boletim do aluno na Matéria/Bimestre do simulado
   let d = JSON.parse(localStorage.getItem("boletim_"+_alunoEncontradoLancamento)||"{}");
   let b = s.bimestre;
   let m = s.materia;
@@ -1113,17 +920,15 @@ function calcularELancarSimulado(){
   if(!d[b][m]) d[b][m] = {};
 
   d[b][m].sim = notaFinalCalc;
-  d[b][m].simCalculada = notaFinalCalc; // Armazena a calculada para controle de alteração manual
+  d[b][m].simCalculada = notaFinalCalc;
   d[b][m].simuladoId = simId;
 
-  // Recalcular média
   let red = +d[b][m].red||0;
   let sim = +d[b][m].sim||0;
   let vis = +d[b][m].vis||0;
   let prova = +d[b][m].prova||0;
   d[b][m].media = calcularMedia(red, sim, vis, prova);
 
-  // Recalcular média do bimestre
   let soma=0, cont=0;
   materias.forEach(mat=>{
     if(d[b]?.[mat]?.media){ soma+=+d[b][mat].media; cont++; }
@@ -1132,16 +937,14 @@ function calcularELancarSimulado(){
 
   localStorage.setItem("boletim_"+_alunoEncontradoLancamento, JSON.stringify(d));
 
-  alert(`Correção Salva!\nAluno: ${_alunoEncontradoLancamento}\nAcertos: ${acertos}\nErros/Branco: ${errosOuBranco}\nNota Final Registrada na disciplina de ${m} (${b}º Bimestre): ${notaFinalCalc}`);
-  
+  alert(`Correção Lançada!\nAluno: ${_alunoEncontradoLancamento}\nNota em ${m} (${b}º Bimestre): ${notaFinalCalc}`);
   resetFormLancamento();
 }
 
 // ===================== ALUNO =====================
 function loadAluno(){
   inicializarCodigosAlunos();
-  adminBox.classList.add("hidden");
-  coordBox.classList.add("hidden");
+  gestaoBox.classList.add("hidden");
   userBox.classList.remove("hidden");
   userName.innerText = "Aluno: "+currentUser;
   
@@ -1177,20 +980,8 @@ function renderBoletimAluno(){
 
   boletimAluno.innerHTML = html;
   mediaFinal.innerHTML = notaHTML(cf?(sf/cf).toFixed(2):"--");
+  provasDisponiveisAluno.innerHTML = "<p>Suas notas de simulados são sincronizadas automaticamente com o boletim escolar acima.</p>";
 }
-
-function loadProvasAluno(){
-  provasDisponiveisAluno.innerHTML = "Consulte seus simulados e provas com a coordenação.";
-  provasConcluidas.innerHTML = "Vide notas lançadas no Boletim.";
-  provasAguardando.innerHTML = "Nenhum no momento.";
-}
-
-function loadHistoricoAluno(){
-  historicoProvasAluno.innerHTML = "Histórico sincronizado com o Boletim principal.";
-}
-
-function fecharProvaModal(){ provaModal.classList.add("hidden"); userBox.classList.remove("hidden"); }
-function fecharCorrecaoModal(){ correcaoModal.classList.add("hidden"); adminBox.classList.remove("hidden"); }
 </script>
 </body>
 </html>
