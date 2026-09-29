@@ -17,19 +17,22 @@ body{
 input,select,button,textarea{width:100%;padding:8px;margin:4px 0;border:none;border-radius:6px;color:#000;}
 button{background:#00c6ff;font-weight:bold;cursor:pointer;color:#000;}
 button:hover{background:#0072ff;color:#fff;}
-.hidden{display:none;}
+.hidden{display:none !important;}
 table{width:100%;border-collapse:collapse;margin-top:10px;}
 th,td{border:1px solid rgba(255,255,255,0.2);padding:6px;text-align:center;}
 th{background:rgba(0,0,0,0.4);}
 .reprovado{color:#ff4d4d;font-weight:bold;}
 .ouro{color:gold;font-weight:bold;}
 .prata{color:silver;font-weight:bold;}
-/* NOVOS ESTILOS */
+
+/* ESTILOS DE NAVEGAÇÃO E ABAS */
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px;}
 .tab-btn{width:auto;padding:8px 16px;background:rgba(0,198,255,0.3);color:#fff;border-radius:20px;font-size:13px;}
 .tab-btn.active{background:#00c6ff;color:#000;}
 .tab-content{display:none;}
 .tab-content.active{display:block;}
+
+/* ELEMENTOS DIVERSOS */
 .competencia-box{background:rgba(255,255,255,0.07);border-radius:8px;padding:12px;margin-bottom:10px;}
 .competencia-box h4{margin:0 0 8px;color:#00c6ff;}
 .crit-row{display:flex;align-items:center;gap:8px;margin:4px 0;}
@@ -55,13 +58,30 @@ th{background:rgba(0,0,0,0.4);}
 hr{border-color:rgba(255,255,255,0.15);}
 .info-box{background:rgba(0,198,255,0.1);border:1px solid #00c6ff;border-radius:8px;padding:10px;margin:8px 0;font-size:13px;}
 textarea{background:#fff;color:#000;min-height:80px;resize:vertical;}
-select{background:#fff;}
-input[type=number]{background:#fff;}
-input[type=text]{background:#fff;}
-input[type=password]{background:#fff;}
+select, input[type=number], input[type=text], input[type=password], input[type=date]{background:#fff;}
+
+/* ESTILOS DE IMPRESSÃO DO SIMULADO */
+#areaImpressao { display: none; }
+
+@media print {
+  body { background: white !important; color: black !important; font-family: Arial, sans-serif; }
+  .container, .box, #loginBox, #registerBox, #siteBox { display: none !important; }
+  #areaImpressao { display: block !important; color: black !important; background: white !important; padding: 0; }
+  .cabecalho-impressao { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+  .cabecalho-impressao h2 { margin: 0; text-align: center; text-transform: uppercase; }
+  .cabecalho-impressao h3 { margin: 5px 0 15px 0; text-align: center; color: #333; }
+  .campos-aluno { border: 1px solid #000; padding: 10px; margin-bottom: 20px; font-size: 14px; }
+  .campos-aluno table { width: 100%; border: none; }
+  .campos-aluno td { border: none; text-align: left; padding: 4px; }
+  .questao-print { margin-bottom: 18px; page-break-inside: avoid; }
+  .questao-print p { margin: 4px 0; font-size: 14px; }
+  .questao-print img { max-width: 300px; display: block; margin: 8px 0; }
+  .alt-print { margin-left: 20px; font-size: 13.5px; margin-top: 3px; }
+}
 </style>
 </head>
 <body>
+
 <div class="container">
 
 <!-- LOGIN -->
@@ -152,12 +172,13 @@ input[type=password]{background:#fff;}
   </div>
 
   <!-- COORDENAÇÃO -->
-  <!-- NOVO CARGO: COORDENAÇÃO -->
   <div class="box hidden" id="coordBox">
     <h3>👩‍💼 Coordenação</h3>
     <div class="tabs">
       <button class="tab-btn active" onclick="showCoordTab('alunos')">👥 Alunos</button>
-      <button class="tab-btn" onclick="showCoordTab('provas')">📝 Provas</button>
+      <button class="tab-btn" onclick="showCoordTab('simulados')">📝 Criar Simulado</button>
+      <button class="tab-btn" onclick="showCoordTab('listaAlunos')">🔑 Lista (Códigos)</button>
+      <button class="tab-btn" onclick="showCoordTab('lancarSimulados')">🎯 Lançar Simulados</button>
       <button class="tab-btn" onclick="showCoordTab('rankingCoord')">🏆 Ranking</button>
       <button class="tab-btn" onclick="showCoordTab('recuperacaoCoord')">📉 Recuperação</button>
     </div>
@@ -172,27 +193,69 @@ input[type=password]{background:#fff;}
       </div>
     </div>
 
-    <!-- ABA PROVAS COORD -->
-    <div id="tab-provas" class="tab-content">
-      <h4>Criar Nova Prova</h4>
-      <input id="provaNome" type="text" placeholder="Nome da prova">
-      <select id="provaMateria">
-        <option value="">-- Matéria --</option>
+    <!-- ABA CRIAR SIMULADO -->
+    <div id="tab-simulados" class="tab-content">
+      <h4>Criar / Gerenciar Simulado</h4>
+      <input id="simuladoNome" type="text" placeholder="Nome ou título do simulado *">
+      <select id="simuladoMateria">
+        <option value="">-- Selecione a Matéria * --</option>
       </select>
-      <select id="provaBimestre">
+      <select id="simuladoBimestre">
         <option value="1">1º Bimestre</option>
         <option value="2">2º Bimestre</option>
         <option value="3">3º Bimestre</option>
         <option value="4">4º Bimestre</option>
       </select>
-      <input id="provaData" type="date">
-      <textarea id="provaDescricao" placeholder="Descrição opcional"></textarea>
-      <button onclick="adicionarQuestao()">➕ Adicionar Questão (máx 15)</button>
-      <div id="questoesEditor"></div>
-      <button onclick="salvarProva()" class="btn-success">💾 Salvar Prova</button>
+      <input id="simuladoData" type="date">
+      <textarea id="simuladoDescricao" placeholder="Instruções ou descrição opcional"></textarea>
+      
+      <div class="info-box">
+        <b>Status das Questões:</b> <span id="qtdQuestoesInfo">0</span> / 50 questões adicionadas.<br>
+        <b>Valor Total do Simulado:</b> <span id="valorTotalInfo" style="color:gold; font-weight:bold;">0.00</span> pt(s)
+      </div>
+
+      <button onclick="adicionarQuestaoSimulado()">➕ Adicionar Questão</button>
+      <div id="questoesSimuladoEditor"></div>
+      <button onclick="salvarSimulado()" class="btn-success" style="margin-top:10px;">💾 Salvar Simulado</button>
       <hr>
-      <h4>Provas Cadastradas</h4>
-      <div id="listaProvasCoord"></div>
+      <h4>Simulados Cadastrados</h4>
+      <div id="listaSimuladosCoord"></div>
+    </div>
+
+    <!-- ABA LISTA DE CÓDIGOS DE ALUNOS -->
+    <div id="tab-listaAlunos" class="tab-content">
+      <h3>🔑 Código Único dos Alunos (5 dígitos)</h3>
+      <p style="font-size:13px; color:#ccc;">Estes códigos fixos de 5 dígitos são gerados automaticamente e devem ser usados para localizar o aluno e realizar a correção rápida de simulados.</p>
+      <div id="tabelaListaCodigos"></div>
+    </div>
+
+    <!-- ABA LANÇAR SIMULADOS -->
+    <div id="tab-lancarSimulados" class="tab-content">
+      <h3>🎯 Correção e Lançamento Direto de Simulado</h3>
+      <div class="questao-box">
+        <label>1. Selecione o Simulado:</label>
+        <select id="lancarSimuladoSelect" onchange="resetFormLancamento()"></select>
+
+        <label style="margin-top:10px; display:block;">2. Código de 5 dígitos do Aluno:</label>
+        <div style="display:flex; gap:10px;">
+          <input id="codigoAlunoBusca" type="text" maxlength="5" placeholder="Ex: 84920" style="flex:1;">
+          <button onclick="buscarAlunoPorCodigo()" style="width:auto; padding:0 20px;">🔍 Buscar Aluno</button>
+        </div>
+      </div>
+
+      <div id="areaLancamentoForm" class="hidden">
+        <div class="info-box">
+          <h4>Aluno Identificado: <span id="alunoIdentificadoNome" style="color:gold;"></span> (Código: <span id="alunoIdentificadoCodigo"></span>)</h4>
+          <p id="infoStatusLancamento" style="margin:0; font-size:12px;"></p>
+        </div>
+
+        <h4>Registro de Respostas do Papel:</h4>
+        <div id="questoesFormLancamento"></div>
+
+        <div style="margin-top:15px; background:rgba(0,0,0,0.4); padding:15px; border-radius:8px;">
+          <button onclick="calcularELancarSimulado()" class="btn-success" style="font-size:16px;">💾 Calcular e Lançar no Boletim</button>
+        </div>
+      </div>
     </div>
 
     <!-- ABA RANKING COORD -->
@@ -213,9 +276,9 @@ input[type=password]{background:#fff;}
   <!-- ALUNO -->
   <div class="box hidden" id="userBox">
     <h3 id="userName"></h3>
+    <p id="userCodigoBadge" style="font-size:14px; color:#00c6ff;"></p>
     <div class="tabs">
       <button class="tab-btn active" onclick="showAlunoTab('boletimAluno')">📋 Boletim</button>
-      <!-- ÁREA DE PROVAS DO ALUNO -->
       <button class="tab-btn" onclick="showAlunoTab('provasAluno')">📝 Provas</button>
       <button class="tab-btn" onclick="showAlunoTab('historicoAluno')">📊 Histórico de Provas</button>
     </div>
@@ -238,7 +301,6 @@ input[type=password]{background:#fff;}
 
     <!-- ABA HISTÓRICO ALUNO -->
     <div id="tab-historicoAluno" class="tab-content">
-      <!-- HISTÓRICO DE PROVAS SEPARADO DO BOLETIM -->
       <h4>📊 Histórico de Provas</h4>
       <div id="historicoProvasAluno"></div>
     </div>
@@ -272,17 +334,18 @@ input[type=password]{background:#fff;}
 </div><!-- /siteBox -->
 </div><!-- /container -->
 
+<!-- ÁREA EXCLUSIVA PARA IMPRESSÃO DO SIMULADO -->
+<div id="areaImpressao"></div>
+
 <script>
-// ===================== CONSTANTES =====================
+// ===================== CONSTANTES E ESTADO =====================
 const ADMIN_USER = "Joaonetosantana";
 const ADMIN_PASS = "131210";
-// NOVO: credenciais da coordenação
 const COORD_USER = "coordenacao";
 const COORD_PASS = "10";
 
 const materias = ["Português","Matemática","Ciências","História","Geografia","Inglês","Educação Física"];
 
-// DEFINIÇÃO DAS COMPETÊNCIAS DE REDAÇÃO
 const competencias = [
   {
     nome:"C1 – Adequação Linguística", max:2.0,
@@ -328,9 +391,46 @@ const competencias = [
 ];
 
 let currentUser = "", isAdmin = false, isCoord = false, selectedAluno = "";
-let questoesData = []; // CORRIGIDO: renomeado para evitar conflito com o elemento HTML #questoesEditor
-let provaAtualId = null;  // id da prova sendo respondida
-let correcaoAtualKey = null; // chave da correção em andamento
+let simuladoQuestoesData = [];
+let provaAtualId = null;
+let _alunoEncontradoLancamento = null;
+
+// ===================== INICIALIZAÇÃO E CÓDIGOS FIXOS =====================
+function inicializarCodigosAlunos(){
+  let alunosKeys = Object.keys(localStorage).filter(k => k.startsWith("user_"));
+  let codigosExistentes = new Set();
+  
+  // Primeiro passa coletando os códigos que já existem
+  alunosKeys.forEach(k => {
+    let username = k.replace("user_", "");
+    let cod = localStorage.getItem("cod_user_" + username);
+    if(cod) codigosExistentes.add(cod);
+  });
+
+  // Atribui novo código único de 5 dígitos para quem não tem
+  alunosKeys.forEach(k => {
+    let username = k.replace("user_", "");
+    if(!localStorage.getItem("cod_user_" + username)){
+      let novoCod = "";
+      do {
+        novoCod = Math.floor(10000 + Math.random() * 90000).toString();
+      } while(codigosExistentes.has(novoCod));
+      codigosExistentes.add(novoCod);
+      localStorage.setItem("cod_user_" + username, novoCod);
+    }
+  });
+}
+
+function buscarAlunoPorCodigoStorage(codigo){
+  let alunosKeys = Object.keys(localStorage).filter(k => k.startsWith("user_"));
+  for(let k of alunosKeys){
+    let username = k.replace("user_", "");
+    if(localStorage.getItem("cod_user_" + username) === codigo.trim()){
+      return username;
+    }
+  }
+  return null;
+}
 
 // ===================== NAVEGAÇÃO =====================
 function showRegister(){ loginBox.classList.add("hidden"); registerBox.classList.remove("hidden"); }
@@ -340,11 +440,13 @@ function register(){
   if(!regUser.value || !regPass.value){ alert("Preencha usuário e senha!"); return; }
   if(localStorage.getItem("user_"+regUser.value)){ alert("Usuário já existe!"); return; }
   localStorage.setItem("user_"+regUser.value, regPass.value);
+  inicializarCodigosAlunos();
   alert("Conta criada!");
   backLogin();
 }
 
 function login(){
+  inicializarCodigosAlunos();
   if(loginUser.value===ADMIN_USER && loginPass.value===ADMIN_PASS) enter("admin", loginUser.value);
   else if(loginUser.value===COORD_USER && loginPass.value===COORD_PASS) enter("coord", loginUser.value);
   else if(localStorage.getItem("user_"+loginUser.value)===loginPass.value) enter("aluno", loginUser.value);
@@ -382,7 +484,9 @@ function showCoordTab(tab){
   document.querySelectorAll('#coordBox .tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   event.target.classList.add('active');
-  if(tab==='provas') loadProvasCoord();
+  if(tab==='simulados') loadSimuladosCoord();
+  if(tab==='listaAlunos') renderListaCodigos();
+  if(tab==='lancarSimulados') prepareTabLancarSimulados();
   if(tab==='rankingCoord') gerarRankingCoord();
   if(tab==='recuperacaoCoord') gerarRecuperacaoCoord();
   if(tab==='alunos') loadAlunosCoord();
@@ -403,16 +507,15 @@ function loadAdmin(){
   userBox.classList.add("hidden");
   coordBox.classList.add("hidden");
 
-  // Preencher selects de matéria
   materiasInputs.innerHTML = "";
   materias.forEach(m=>{
     materiasInputs.innerHTML += `
       <h4>${m}</h4>
-      <input id="${m}_sim" type="number" min="0" max="10" placeholder="Simulado (0-10)">
-      <input id="${m}_vis" type="number" min="0" max="2" placeholder="Vistos (0-2)">
-      <input id="${m}_prova" type="number" min="0" max="8" placeholder="Prova (0-8)">
+      <input id="${m}_sim" type="number" step="0.1" min="0" max="10" placeholder="Simulado (0-10)">
+      <input id="${m}_vis" type="number" step="0.1" min="0" max="2" placeholder="Vistos (0-2)">
+      <input id="${m}_prova" type="number" step="0.1" min="0" max="8" placeholder="Prova (0-8)">
       <small style="color:#aaa">Redação: preenchida automaticamente pela área de competências</small>
-      <input id="${m}_red_display" type="number" min="0" max="10" placeholder="Redação (auto)" readonly style="background:#ddd;cursor:not-allowed;">
+      <input id="${m}_red_display" type="number" step="0.1" min="0" max="10" placeholder="Redação (auto)" readonly style="background:#ddd;cursor:not-allowed;">
     `;
   });
 
@@ -435,7 +538,6 @@ function carregarNotas(){
   let b = bimestreAdmin.value;
   presenca.value = d[b]?.presenca||"Presente";
 
-  // Nota de redação salva
   let redNota = getNotaRedacao(selectedAluno);
 
   let soma=0, cont=0;
@@ -446,45 +548,41 @@ function carregarNotas(){
 
   materias.forEach(m=>{
     let x = d[b]?.[m];
-    document.getElementById(m+"_sim").value = x?.sim||"";
-    document.getElementById(m+"_vis").value = x?.vis||"";
-    document.getElementById(m+"_prova").value = x?.prova||"";
-    // Preenche redação automática
+    document.getElementById(m+"_sim").value = x?.sim!==undefined ? x.sim : "";
+    document.getElementById(m+"_vis").value = x?.vis!==undefined ? x.vis : "";
+    document.getElementById(m+"_prova").value = x?.prova!==undefined ? x.prova : "";
     document.getElementById(m+"_red_display").value = redNota!==null ? redNota : (x?.red||"");
   });
 }
 
-// CÁLCULO CORRIGIDO: (Redação*1 + Simulado*1 + Vistos*1 + Prova*1) com pesos corretos
-// Redação: 0-10, Simulado: 0-10, Vistos: 0-2 (normalizado para 10 = 0-2), Prova: 0-8
-// Média = (Redação + Simulado + (Vistos/2*10) + (Prova/8*10)) / 4
-// BUG CORRIGIDO: fórmula anterior dividia por 3 com 4 componentes
 function calcularMedia(red, sim, vis, prova){
-  // Normaliza cada componente para 0-10 com seus pesos
-  // Redação: máx 10, Simulado: máx 10, Vistos: máx 2 (= 1 ponto no total de 10), Prova: máx 8 (= ~8 pontos)
-  // Soma máxima = 10 + 10 + 2 + 8 = 30 → escala para 10: /3
   let soma = (+red) + (+sim) + (+vis) + (+prova);
-  return (soma / 3).toFixed(2); // máx 30/3 = 10
+  return (soma / 3).toFixed(2);
 }
 
 function salvarNotas(){
   if(!selectedAluno){ alert("Selecione um aluno!"); return; }
   let b = bimestreAdmin.value;
   let d = JSON.parse(localStorage.getItem("boletim_"+selectedAluno)||"{}");
-  d[b] = { presenca: presenca.value };
+  if(!d[b]) d[b] = {};
+  d[b].presenca = presenca.value;
   let soma=0, cont=0;
   let redNota = getNotaRedacao(selectedAluno);
 
   materias.forEach(m=>{
-    let sim = +document.getElementById(m+"_sim").value||0;
-    let vis = +document.getElementById(m+"_vis").value||0;
-    let prova = +document.getElementById(m+"_prova").value||0;
+    let sim = document.getElementById(m+"_sim").value !== "" ? +document.getElementById(m+"_sim").value : 0;
+    let vis = document.getElementById(m+"_vis").value !== "" ? +document.getElementById(m+"_vis").value : 0;
+    let prova = document.getElementById(m+"_prova").value !== "" ? +document.getElementById(m+"_prova").value : 0;
     let red = redNota!==null ? redNota : (+document.getElementById(m+"_red_display").value||0);
-    if(sim||vis||prova||red){
-      // CÁLCULO CORRIGIDO
-      let media = calcularMedia(red, sim, vis, prova);
-      d[b][m] = { red, sim, vis, prova, media };
-      soma += +media; cont++;
-    }
+    
+    // Se houve preenchimento
+    let prev = d[b][m] || {};
+    d[b][m] = { 
+      ...prev,
+      red, sim, vis, prova, 
+      media: calcularMedia(red, sim, vis, prova)
+    };
+    soma += +d[b][m].media; cont++;
   });
 
   d[b].mediaBimestre = cont ? (soma/cont).toFixed(2) : "--";
@@ -495,7 +593,7 @@ function salvarNotas(){
   carregarNotas();
 }
 
-// ===================== REDAÇÃO POR COMPETÊNCIAS =====================
+// ===================== REDAÇÃO =====================
 function getNotaRedacao(aluno){
   let r = localStorage.getItem("redacao_"+aluno);
   if(!r) return null;
@@ -585,7 +683,7 @@ function gerarRecuperacao(){
 }
 
 function notaHTML(v){
-  if(v==="--") return "--";
+  if(v==="--" || v===undefined) return "--";
   return `<span class="${v<6?'reprovado':''}">${v}</span>`;
 }
 
@@ -595,7 +693,7 @@ function gerarRanking(){
     let d = JSON.parse(localStorage.getItem("boletim_"+n)||"{}");
     let s=0,c=0;
     for(let b=1;b<=4;b++){
-      if(d[b]?.mediaBimestre){ s+=+d[b].mediaBimestre; c++; }
+      if(d[b]?.mediaBimestre && d[b].mediaBimestre!=="--"){ s+=+d[b].mediaBimestre; c++; }
     }
     return {nome:n, media:c?(s/c):0};
   }).sort((a,b)=>b.media-a.media);
@@ -610,10 +708,11 @@ function loadCoord(){
   coordBox.classList.remove("hidden");
   adminBox.classList.add("hidden");
   userBox.classList.add("hidden");
-  // Preencher select de matéria nas provas
-  let sel = document.getElementById("provaMateria");
-  sel.innerHTML = '<option value="">-- Matéria --</option>';
+  
+  let sel = document.getElementById("simuladoMateria");
+  sel.innerHTML = '<option value="">-- Selecione a Matéria * --</option>';
   materias.forEach(m=>{ sel.innerHTML += `<option value="${m}">${m}</option>`; });
+  
   loadAlunosCoord();
 }
 
@@ -638,7 +737,11 @@ function verBoletimCoord(aluno){
     <table><tr><th>Matéria</th><th>Red</th><th>Sim</th><th>Vistos</th><th>Prova</th><th>Média</th></tr>`;
     materias.forEach(m=>{
       let x = d[b]?.[m];
-      html += `<tr><td>${m}</td><td>${x?.red??"--"}</td><td>${x?.sim??"--"}</td>
+      let tagSim = x?.simCalculada!==undefined && x?.sim!==undefined && x.sim !== x.simCalculada 
+        ? `${x.sim} <small style="color:orange;" title="Calculado originalmente: ${x.simCalculada}">(ajustado)</small>` 
+        : (x?.sim??"--");
+      
+      html += `<tr><td>${m}</td><td>${x?.red??"--"}</td><td>${tagSim}</td>
         <td>${x?.vis??"--"}</td><td>${x?.prova??"--"}</td>
         <td>${notaHTML(x?.media??"--")}</td></tr>`;
     });
@@ -653,7 +756,7 @@ function gerarRankingCoord(){
     let d = JSON.parse(localStorage.getItem("boletim_"+n)||"{}");
     let s=0,c=0;
     for(let b=1;b<=4;b++){
-      if(d[b]?.mediaBimestre){ s+=+d[b].mediaBimestre; c++; }
+      if(d[b]?.mediaBimestre && d[b].mediaBimestre!=="--"){ s+=+d[b].mediaBimestre; c++; }
     }
     return {nome:n,media:c?(s/c):0};
   }).sort((a,b)=>b.media-a.media);
@@ -673,124 +776,378 @@ function gerarRecuperacaoCoord(){
     }
     if(rec.length) html += `<p><b>${nome}</b>: ${rec.join(", ")}</p>`;
   });
-  recuperacaoCoord.innerHTML = html||"Nenhum aluno em recuperação 🎉";
+  recuperacaoCoord.innerHTML = html||"Nenum aluno em recuperação 🎉";
 }
 
-// ===================== SISTEMA DE PROVAS (COORDENAÇÃO) =====================
-function getProvas(){ return JSON.parse(localStorage.getItem("provas")||"[]"); }
-function salvarProvas(p){ localStorage.setItem("provas",JSON.stringify(p)); }
-
-// Adicionar questão na tela de criação
-function adicionarQuestao(){
-  if(questoesData.length>=15){ alert("Máximo de 15 questões!"); return; }
-  questoesData.push({tipo:"objetiva",enunciado:"",alternativas:["","","",""],correta:0});
-  renderQuestoesEditor();
+function renderListaCodigos(){
+  inicializarCodigosAlunos();
+  let html = "<table><tr><th>Aluno</th><th>Código (5 dígitos)</th></tr>";
+  Object.keys(localStorage).filter(k=>k.startsWith("user_")).forEach(u=>{
+    let nome = u.replace("user_","");
+    let cod = localStorage.getItem("cod_user_" + nome);
+    html += `<tr><td><b>${nome}</b></td><td><code style="font-size:16px; font-weight:bold; color:#00c6ff;">${cod}</code></td></tr>`;
+  });
+  html += "</table>";
+  tabelaListaCodigos.innerHTML = html;
 }
 
-// CORRIGIDO: usa document.getElementById("questoesEditor") em vez da variável de mesmo nome
-function renderQuestoesEditor(){
+// ===================== SISTEMA DE SIMULADOS (CRIAR, EDITAR, IMPRIMIR) =====================
+function getSimulados(){ return JSON.parse(localStorage.getItem("simulados")||"[]"); }
+function salvarSimuladosStorage(s){ localStorage.setItem("simulados",JSON.stringify(s)); }
+
+function adicionarQuestaoSimulado(){
+  if(simuladoQuestoesData.length >= 50){ alert("Limite máximo de 50 questões por simulado atingido!"); return; }
+  simuladoQuestoesData.push({
+    tipo: "multipla_4", // multipla_4 (A-D), multipla_5 (A-E), vf (Verdadeiro/Falso)
+    enunciado: "",
+    alternativas: ["", "", "", ""],
+    correta: 0,
+    valor: 1.0,
+    imagemUrl: ""
+  });
+  renderQuestoesSimuladoEditor();
+}
+
+function renderQuestoesSimuladoEditor(){
   let html="";
-  questoesData.forEach((q,i)=>{
+  let totalVal = 0;
+  
+  simuladoQuestoesData.forEach((q,i)=>{
+    let valQ = parseFloat(q.valor)||0;
+    totalVal += valQ;
+
     html += `<div class="questao-box">
-      <b>Questão ${i+1}</b>
-      <select onchange="questoesData[${i}].tipo=this.value;renderQuestoesEditor()">
-        <option value="objetiva" ${q.tipo==="objetiva"?"selected":""}>Objetiva</option>
-        <option value="dissertativa" ${q.tipo==="dissertativa"?"selected":""}>Dissertativa</option>
-        <option value="mista" ${q.tipo==="mista"?"selected":""}>Mista</option>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <b>Questão ${i+1}</b>
+        <span>Valor: <input type="number" step="0.1" min="0" value="${q.valor}" onchange="simuladoQuestoesData[${i}].valor=parseFloat(this.value)||0; renderQuestoesSimuladoEditor();" style="width:70px; display:inline-block;"> pt(s)</span>
+      </div>
+
+      <select onchange="mudarTipoQuestaoSimulado(${i}, this.value)">
+        <option value="multipla_4" ${q.tipo==="multipla_4"?"selected":""}>Múltipla Escolha (A, B, C, D)</option>
+        <option value="multipla_5" ${q.tipo==="multipla_5"?"selected":""}>Múltipla Escolha (A, B, C, D, E)</option>
+        <option value="vf" ${q.tipo==="vf"?"selected":""}>Verdadeiro ou Falso (V/F)</option>
       </select>
-      <input type="text" placeholder="Enunciado" value="${q.enunciado.replace(/"/g,'&quot;')}"
-        oninput="questoesData[${i}].enunciado=this.value">`;
-    if(q.tipo==="objetiva"||q.tipo==="mista"){
+
+      <textarea placeholder="Enunciado da questão *" oninput="simuladoQuestoesData[${i}].enunciado=this.value">${q.enunciado}</textarea>
+      <input type="text" placeholder="URL da Imagem (Opcional)" value="${q.imagemUrl||""}" oninput="simuladoQuestoesData[${i}].imagemUrl=this.value">`;
+
+    if(q.tipo==="multipla_4" || q.tipo==="multipla_5"){
+      html += `<p style="margin:5px 0 2px 0; font-size:12px;">Alternativas e Resposta Correta:</p>`;
       q.alternativas.forEach((alt,ai)=>{
         html += `<div style="display:flex;align-items:center;gap:5px;margin:3px 0;">
-          <input type="radio" name="correta${i}" value="${ai}" ${q.correta===ai?"checked":""}
-            onchange="questoesData[${i}].correta=${ai}" style="width:auto;flex:none;">
-          <input type="text" placeholder="Alternativa ${String.fromCharCode(65+ai)}"
-            value="${alt.replace(/"/g,'&quot;')}" oninput="questoesData[${i}].alternativas[${ai}]=this.value"
+          <input type="radio" name="correta_sim_${i}" value="${ai}" ${q.correta===ai?"checked":""}
+            onchange="simuladoQuestoesData[${i}].correta=${ai}" style="width:auto;flex:none;">
+          <input type="text" placeholder="Alternativa ${String.fromCharCode(65+ai)} *"
+            value="${alt.replace(/"/g,'&quot;')}" oninput="simuladoQuestoesData[${i}].alternativas[${ai}]=this.value"
             style="flex:1;width:auto;">
         </div>`;
       });
+    } else if(q.tipo==="vf"){
+      html += `<p style="margin:5px 0 2px 0; font-size:12px;">Gabarito Correto:</p>
+      <select onchange="simuladoQuestoesData[${i}].correta=parseInt(this.value)">
+        <option value="0" ${q.correta===0?"selected":""}>Verdadeiro (V)</option>
+        <option value="1" ${q.correta===1?"selected":""}>Falso (F)</option>
+      </select>`;
     }
-    if(q.tipo==="dissertativa"||q.tipo==="mista"){
-      html += `<small style="color:#aaa">✏️ Campo de resposta aberta (preenchido pelo aluno)</small>`;
-    }
-    html += `<button class="btn-sm btn-danger" onclick="removerQuestao(${i})">🗑 Remover</button></div>`;
+
+    html += `<button class="btn-sm btn-danger" onclick="removerQuestaoSimulado(${i})" style="margin-top:8px;">🗑 Remover Questão</button></div>`;
   });
-  document.getElementById("questoesEditor").innerHTML = html;
+
+  qtdQuestoesInfo.innerText = simuladoQuestoesData.length;
+  valorTotalInfo.innerText = totalVal.toFixed(2);
+  document.getElementById("questoesSimuladoEditor").innerHTML = html;
 }
 
-function removerQuestao(i){
-  questoesData.splice(i,1);
-  renderQuestoesEditor();
+function mudarTipoQuestaoSimulado(index, novoTipo){
+  let q = simuladoQuestoesData[index];
+  q.tipo = novoTipo;
+  if(novoTipo === "multipla_4"){
+    q.alternativas = ["", "", "", ""];
+    q.correta = 0;
+  } else if(novoTipo === "multipla_5"){
+    q.alternativas = ["", "", "", "", ""];
+    q.correta = 0;
+  } else if(novoTipo === "vf"){
+    q.alternativas = ["Verdadeiro", "Falso"];
+    q.correta = 0;
+  }
+  renderQuestoesSimuladoEditor();
 }
 
-function salvarProva(){
-  let nome = document.getElementById("provaNome").value.trim();
-  let materia = document.getElementById("provaMateria").value;
-  let bimestre = document.getElementById("provaBimestre").value;
-  let data = document.getElementById("provaData").value;
-  if(!nome||!materia){ alert("Preencha nome e matéria!"); return; }
-  if(questoesData.length===0){ alert("Adicione ao menos uma questão!"); return; }
-  let provas = getProvas();
+function removerQuestaoSimulado(i){
+  simuladoQuestoesData.splice(i,1);
+  renderQuestoesSimuladoEditor();
+}
+
+function salvarSimulado(){
+  let nome = document.getElementById("simuladoNome").value.trim();
+  let materia = document.getElementById("simuladoMateria").value;
+  let bimestre = document.getElementById("simuladoBimestre").value;
+  let data = document.getElementById("simuladoData").value;
+  let descricao = document.getElementById("simuladoDescricao").value;
+
+  if(!nome || !materia){ alert("Preencha obrigatoriamente o nome e a matéria do simulado!"); return; }
+  if(simuladoQuestoesData.length === 0){ alert("Adicione pelo menos uma questão ao simulado!"); return; }
+
+  // Validação de campos das questões
+  for(let idx=0; idx<simuladoQuestoesData.length; idx++){
+    let q = simuladoQuestoesData[idx];
+    if(!q.enunciado.trim()){ alert(`A questão ${idx+1} está sem enunciado!`); return; }
+    if(q.tipo.startsWith("multipla")){
+      for(let aIdx=0; aIdx<q.alternativas.length; aIdx++){
+        if(!q.alternativas[aIdx].trim()){ alert(`A alternativa ${String.fromCharCode(65+aIdx)} da questão ${idx+1} está em branco!`); return; }
+      }
+    }
+  }
+
+  let totalVal = simuladoQuestoesData.reduce((acc, curr)=> acc + (parseFloat(curr.valor)||0), 0);
+
+  let simulados = getSimulados();
   let id = Date.now().toString();
-  provas.push({
-    id, nome, materia, bimestre, data,
-    descricao: document.getElementById("provaDescricao").value,
-    questoes: JSON.parse(JSON.stringify(questoesData))
+
+  simulados.push({
+    id, nome, materia, bimestre, data, descricao,
+    valorTotal: totalVal,
+    questoes: JSON.parse(JSON.stringify(simuladoQuestoesData))
   });
-  salvarProvas(provas);
-  questoesData = [];
-  document.getElementById("provaNome").value="";
-  document.getElementById("provaDescricao").value="";
-  document.getElementById("provaData").value="";
-  document.getElementById("questoesEditor").innerHTML="";
-  alert("Prova salva!");
-  loadProvasCoord();
+
+  salvarSimuladosStorage(simulados);
+  simuladoQuestoesData = [];
+  document.getElementById("simuladoNome").value="";
+  document.getElementById("simuladoDescricao").value="";
+  document.getElementById("simuladoData").value="";
+  renderQuestoesSimuladoEditor();
+  alert("Simulado salvo com sucesso!");
+  loadSimuladosCoord();
 }
 
-function loadProvasCoord(){
-  let provas = getProvas();
+function loadSimuladosCoord(){
+  let simulados = getSimulados();
   let html="";
-  provas.forEach(p=>{
+  simulados.forEach(s=>{
     html += `<div class="prova-card">
-      <h4>${p.nome}</h4>
-      <p>📚 ${p.materia} | 📅 ${p.data||"s/d"} | Bimestre ${p.bimestre}</p>
-      <p>${p.descricao||""}</p>
-      <p>${p.questoes.length} questão(ões)</p>
-      <button class="btn-sm btn-danger" onclick="excluirProva('${p.id}')">🗑 Excluir</button>
-      <button class="btn-sm" onclick="editarProvaCoord('${p.id}')">✏️ Editar</button>
+      <h4>${s.nome}</h4>
+      <p>📚 ${s.materia} | 📅 ${s.data||"Sem data"} | Bimestre ${s.bimestre}º | Total: <b>${(s.valorTotal||0).toFixed(2)} pts</b></p>
+      <p>${s.descricao||""}</p>
+      <p>${s.questoes.length} questão(ões)</p>
+      <button class="btn-sm" onclick="imprimirSimulado('${s.id}')">🖨️ Imprimir Simulado</button>
+      <button class="btn-sm" onclick="editarSimuladoCoord('${s.id}')">✏️ Editar</button>
+      <button class="btn-sm btn-danger" onclick="excluirSimulado('${s.id}')">🗑 Excluir</button>
     </div>`;
   });
-  listaProvasCoord.innerHTML = html||"Nenhuma prova cadastrada.";
+  listaSimuladosCoord.innerHTML = html||"Nenhum simulado cadastrado.";
 }
 
-function excluirProva(id){
-  if(!confirm("Excluir prova?")) return;
-  let provas = getProvas().filter(p=>p.id!==id);
-  salvarProvas(provas);
-  loadProvasCoord();
+function excluirSimulado(id){
+  if(!confirm("Tem certeza que deseja excluir este simulado?")) return;
+  let simulados = getSimulados().filter(s=>s.id!==id);
+  salvarSimuladosStorage(simulados);
+  loadSimuladosCoord();
 }
 
-// Editar prova: carrega questões no editor
-function editarProvaCoord(id){
-  let p = getProvas().find(x=>x.id===id);
-  if(!p) return;
-  provaNome.value=p.nome; provaMateria.value=p.materia;
-  provaBimestre.value=p.bimestre; provaData.value=p.data;
-  provaDescricao.value=p.descricao||"";
-  questoesData = JSON.parse(JSON.stringify(p.questoes));
-  renderQuestoesEditor();
-  // Remove a antiga e salva ao clicar em Salvar
-  excluirProva(id);
-  alert("Prova carregada para edição.");
+function editarSimuladoCoord(id){
+  let s = getSimulados().find(x=>x.id===id);
+  if(!s) return;
+  document.getElementById("simuladoNome").value = s.nome;
+  document.getElementById("simuladoMateria").value = s.materia;
+  document.getElementById("simuladoBimestre").value = s.bimestre;
+  document.getElementById("simuladoData").value = s.data||"";
+  document.getElementById("simuladoDescricao").value = s.descricao||"";
+  simuladoQuestoesData = JSON.parse(JSON.stringify(s.questoes));
+  renderQuestoesSimuladoEditor();
+  excluirSimulado(id);
+  alert("Simulado carregado no formulário para edição.");
+}
+
+function imprimirSimulado(id){
+  let s = getSimulados().find(x=>x.id===id);
+  if(!s) return;
+
+  let areaImp = document.getElementById("areaImpressao");
+  let html = `
+    <div class="cabecalho-impressao">
+      <h2>PORTAL ESCOLAR - AVALIAÇÃO E SIMULADOS</h2>
+      <h3>${s.nome.toUpperCase()}</h3>
+    </div>
+    <div class="campos-aluno">
+      <table>
+        <tr>
+          <td><b>Aluno(a):</b> ____________________________________________________</td>
+          <td><b>Código:</b> [ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ]</td>
+        </tr>
+        <tr>
+          <td><b>Disciplina:</b> ${s.materia} &nbsp; | &nbsp; <b>Bimestre:</b> ${s.bimestre}º</td>
+          <td><b>Data:</b> ${s.data||"____/____/________"}</td>
+        </tr>
+        <tr>
+          <td colspan="2"><b>Instruções:</b> ${s.descricao||"Responda a todas as questões atentamente no folheto de respostas."}</td>
+        </tr>
+        <tr>
+          <td colspan="2"><b>Valor Total:</b> ${s.valorTotal.toFixed(2)} pontos &nbsp; | &nbsp; <b>Nota Obtida:</b> _________</td>
+        </tr>
+      </table>
+    </div>
+    <hr style="border-color:#000; margin-bottom:20px;">
+  `;
+
+  s.questoes.forEach((q, i) => {
+    html += `<div class="questao-print">
+      <p><b>Questão ${i+1}</b> (${(q.valor||0).toFixed(2)} pt) - ${q.enunciado}</p>`;
+    
+    if(q.imagemUrl && q.imagemUrl.trim()!==""){
+      html += `<img src="${q.imagemUrl}" alt="Imagem da questão">`;
+    }
+
+    if(q.tipo.startsWith("multipla")){
+      q.alternativas.forEach((alt, ai)=>{
+        html += `<div class="alt-print">( &nbsp; ) <b>${String.fromCharCode(65+ai)})</b> ${alt}</div>`;
+      });
+    } else if(q.tipo === "vf"){
+      html += `<div class="alt-print">( &nbsp; ) Verdadeiro (V)</div>`;
+      html += `<div class="alt-print">( &nbsp; ) Falso (F)</div>`;
+    }
+
+    html += `</div>`;
+  });
+
+  areaImp.innerHTML = html;
+  window.print();
+}
+
+// ===================== CORREÇÃO E LANÇAMENTO RÁPIDO DE SIMULADOS =====================
+function prepareTabLancarSimulados(){
+  let simulados = getSimulados();
+  let sel = document.getElementById("lancarSimuladoSelect");
+  sel.innerHTML = '<option value="">-- Selecione o Simulado --</option>';
+  simulados.forEach(s => {
+    sel.innerHTML += `<option value="${s.id}">${s.nome} (${s.materia} - ${s.bimestre}º Bimestre)</option>`;
+  });
+  resetFormLancamento();
+}
+
+function resetFormLancamento(){
+  codigoAlunoBusca.value = "";
+  _alunoEncontradoLancamento = null;
+  areaLancamentoForm.classList.add("hidden");
+  questoesFormLancamento.innerHTML = "";
+}
+
+function buscarAlunoPorCodigo(){
+  let cod = codigoAlunoBusca.value.trim();
+  if(!cod || cod.length !== 5){ alert("Informe um código de exatamente 5 dígitos!"); return; }
+
+  let aluno = buscarAlunoPorCodigoStorage(cod);
+  if(!aluno){ alert("Nenhum aluno encontrado com este código!"); resetFormLancamento(); return; }
+
+  let simId = lancarSimuladoSelect.value;
+  if(!simId){ alert("Selecione um simulado antes de buscar o aluno!"); return; }
+
+  _alunoEncontradoLancamento = aluno;
+  alunoIdentificadoNome.innerText = aluno;
+  alunoIdentificadoCodigo.innerText = cod;
+
+  // Verifica se já tem nota registrada para este simulado
+  let s = getSimulados().find(x=>x.id===simId);
+  let d = JSON.parse(localStorage.getItem("boletim_"+aluno)||"{}");
+  let notaAnterior = d[s.bimestre]?.[s.materia]?.sim;
+  
+  if(notaAnterior !== undefined){
+    infoStatusLancamento.innerText = `⚠️ Este aluno já possui nota lançada neste simulado (${notaAnterior} pts). O novo cálculo sobrescreverá o registro.`;
+  } else {
+    infoStatusLancamento.innerText = `✨ Primeira correção deste simulado para o aluno.`;
+  }
+
+  // Carrega lista simplificada de gabarito para marcar
+  let html = "";
+  s.questoes.forEach((q, i) => {
+    html += `<div class="crit-row" style="background:rgba(255,255,255,0.05); padding:8px; border-radius:6px;">
+      <label><b>Q${i+1}</b> (${q.tipo === "vf" ? "V/F" : "A-" + String.fromCharCode(64 + q.alternativas.length)}) - Valor: ${q.valor}pt</label>
+      <select id="resp_aluno_${i}" style="width:180px;">
+        <option value="-1">Em Branco (0pt)</option>`;
+    
+    if(q.tipo.startsWith("multipla")){
+      q.alternativas.forEach((_, ai) => {
+        html += `<option value="${ai}">Opção ${String.fromCharCode(65+ai)}</option>`;
+      });
+    } else if(q.tipo === "vf"){
+      html += `<option value="0">Verdadeiro (V)</option>`;
+      html += `<option value="1">Falso (F)</option>`;
+    }
+
+    html += `</select></div>`;
+  });
+
+  questoesFormLancamento.innerHTML = html;
+  areaLancamentoForm.classList.remove("hidden");
+}
+
+function calcularELancarSimulado(){
+  if(!_alunoEncontradoLancamento){ alert("Nenhum aluno selecionado!"); return; }
+  let simId = lancarSimuladoSelect.value;
+  let s = getSimulados().find(x=>x.id===simId);
+  if(!s) return;
+
+  let pontosObtidos = 0;
+  let acertos = 0;
+  let errosOuBranco = 0;
+
+  s.questoes.forEach((q, i) => {
+    let el = document.getElementById(`resp_aluno_${i}`);
+    let resp = el ? parseInt(el.value) : -1;
+    if(resp === q.correta){
+      pontosObtidos += (parseFloat(q.valor)||0);
+      acertos++;
+    } else {
+      errosOuBranco++;
+    }
+  });
+
+  let notaFinalCalc = parseFloat(pontosObtidos.toFixed(2));
+
+  // Lança automaticamente no boletim do aluno na Matéria/Bimestre do simulado
+  let d = JSON.parse(localStorage.getItem("boletim_"+_alunoEncontradoLancamento)||"{}");
+  let b = s.bimestre;
+  let m = s.materia;
+
+  if(!d[b]) d[b] = {};
+  if(!d[b][m]) d[b][m] = {};
+
+  d[b][m].sim = notaFinalCalc;
+  d[b][m].simCalculada = notaFinalCalc; // Armazena a calculada para controle de alteração manual
+  d[b][m].simuladoId = simId;
+
+  // Recalcular média
+  let red = +d[b][m].red||0;
+  let sim = +d[b][m].sim||0;
+  let vis = +d[b][m].vis||0;
+  let prova = +d[b][m].prova||0;
+  d[b][m].media = calcularMedia(red, sim, vis, prova);
+
+  // Recalcular média do bimestre
+  let soma=0, cont=0;
+  materias.forEach(mat=>{
+    if(d[b]?.[mat]?.media){ soma+=+d[b][mat].media; cont++; }
+  });
+  d[b].mediaBimestre = cont ? (soma/cont).toFixed(2) : "--";
+
+  localStorage.setItem("boletim_"+_alunoEncontradoLancamento, JSON.stringify(d));
+
+  alert(`Correção Salva!\nAluno: ${_alunoEncontradoLancamento}\nAcertos: ${acertos}\nErros/Branco: ${errosOuBranco}\nNota Final Registrada na disciplina de ${m} (${b}º Bimestre): ${notaFinalCalc}`);
+  
+  resetFormLancamento();
 }
 
 // ===================== ALUNO =====================
 function loadAluno(){
+  inicializarCodigosAlunos();
   adminBox.classList.add("hidden");
   coordBox.classList.add("hidden");
   userBox.classList.remove("hidden");
   userName.innerText = "Aluno: "+currentUser;
+  
+  let cod = localStorage.getItem("cod_user_" + currentUser);
+  userCodigoBadge.innerText = "Seu Código Único de Identificação: " + cod;
+
   renderBoletimAluno();
 }
 
@@ -800,7 +1157,7 @@ function renderBoletimAluno(){
 
   for(let b=1;b<=4;b++){
     let mb = d[b]?.mediaBimestre||"--";
-    let alamar = mb>=9?'<span class="ouro">🏅 Ouro</span>':mb>=8?'<span class="prata">🥈 Prata</span>':"";
+    let alamar = (mb!=="--" && mb>=9) ? '<span class="ouro">🏅 Ouro</span>' : (mb!=="--" && mb>=8) ? '<span class="prata">🥈 Prata</span>' : "";
     html += `<h3>${b}º Bimestre ${alamar}</h3>
       <p>📋 Chamada: ${d[b]?.presenca||"--"}</p>
       <table>
@@ -822,246 +1179,18 @@ function renderBoletimAluno(){
   mediaFinal.innerHTML = notaHTML(cf?(sf/cf).toFixed(2):"--");
 }
 
-// ===================== PROVAS DO ALUNO =====================
 function loadProvasAluno(){
-  let provas = getProvas();
-  let respostas = JSON.parse(localStorage.getItem("respostas_"+currentUser)||"{}");
-
-  let dispHTML="", concHTML="", aguardHTML="";
-
-  provas.forEach(p=>{
-    let resp = respostas[p.id];
-    if(!resp){
-      // Disponível
-      dispHTML += `<div class="prova-card">
-        <h4>${p.nome}</h4>
-        <p>📚 ${p.materia} | Bimestre ${p.bimestre} | ${p.data||""}</p>
-        <button class="btn-sm" onclick="abrirProva('${p.id}')">📝 Fazer Prova</button>
-      </div>`;
-    } else if(resp.enviada){
-      // Verificar se foi corrigida
-      let correcao = getCorrecao(currentUser, p.id);
-      if(correcao){
-        concHTML += `<div class="prova-card">
-          <h4>${p.nome}</h4>
-          <p>📚 ${p.materia} | Bimestre ${p.bimestre}</p>
-          <p>✅ Nota: <b>${correcao.nota}</b></p>
-          ${correcao.comentario?`<p>💬 ${correcao.comentario}</p>`:""}
-        </div>`;
-      } else {
-        aguardHTML += `<div class="prova-card">
-          <h4>${p.nome}</h4>
-          <p>📚 ${p.materia} | Bimestre ${p.bimestre}</p>
-          <p class="badge badge-amarelo">⏳ Aguardando correção</p>
-        </div>`;
-      }
-    } else {
-      // Rascunho — ainda pode editar
-      dispHTML += `<div class="prova-card">
-        <h4>${p.nome} <span class="badge badge-cinza">Rascunho</span></h4>
-        <p>📚 ${p.materia} | Bimestre ${p.bimestre}</p>
-        <button class="btn-sm" onclick="abrirProva('${p.id}')">✏️ Continuar</button>
-      </div>`;
-    }
-  });
-
-  provasDisponiveisAluno.innerHTML = dispHTML||"Nenhuma prova disponível.";
-  provasConcluidas.innerHTML = concHTML||"Nenhuma prova corrigida ainda.";
-  provasAguardando.innerHTML = aguardHTML||"Nenhuma aguardando correção.";
+  provasDisponiveisAluno.innerHTML = "Consulte seus simulados e provas com a coordenação.";
+  provasConcluidas.innerHTML = "Vide notas lançadas no Boletim.";
+  provasAguardando.innerHTML = "Nenhum no momento.";
 }
 
-function abrirProva(id){
-  let p = getProvas().find(x=>x.id===id);
-  if(!p) return;
-  provaAtualId = id;
-  provaModalNome.innerText = p.nome;
-  let respostas = JSON.parse(localStorage.getItem("respostas_"+currentUser)||"{}");
-  let resp = respostas[id]?.respostas||{};
-
-  let html="";
-  p.questoes.forEach((q,i)=>{
-    html += `<div class="questao-box">
-      <p><b>Q${i+1}:</b> ${q.enunciado}</p>`;
-    if(q.tipo==="objetiva"||q.tipo==="mista"){
-      q.alternativas.forEach((alt,ai)=>{
-        html += `<label style="display:block;cursor:pointer;">
-          <input type="radio" name="q${i}" value="${ai}"
-            ${resp[i]?.escolha===ai?"checked":""}
-            onchange=""> ${String.fromCharCode(65+ai)}) ${alt}
-        </label>`;
-      });
-    }
-    if(q.tipo==="dissertativa"||q.tipo==="mista"){
-      html += `<textarea placeholder="Sua resposta..." id="disc_${i}">${resp[i]?.discursiva||""}</textarea>`;
-    }
-    html += `</div>`;
-  });
-  provaModalQuestoes.innerHTML = html;
-  provaModal.classList.remove("hidden");
-  siteBox.querySelector('#userBox').classList.add("hidden");
-}
-
-function salvarProvaAluno(enviar){
-  let p = getProvas().find(x=>x.id===provaAtualId);
-  if(!p) return;
-  let respostas = JSON.parse(localStorage.getItem("respostas_"+currentUser)||"{}");
-  let resp = {};
-  p.questoes.forEach((q,i)=>{
-    resp[i] = {};
-    if(q.tipo==="objetiva"||q.tipo==="mista"){
-      let sel = document.querySelector(`input[name="q${i}"]:checked`);
-      resp[i].escolha = sel ? parseInt(sel.value) : null;
-    }
-    if(q.tipo==="dissertativa"||q.tipo==="mista"){
-      let el = document.getElementById(`disc_${i}`);
-      resp[i].discursiva = el ? el.value : "";
-    }
-  });
-  respostas[provaAtualId] = { respostas: resp, enviada: enviar };
-  localStorage.setItem("respostas_"+currentUser, JSON.stringify(respostas));
-  if(enviar) alert("Prova enviada com sucesso! Aguarde a correção.");
-  else alert("Rascunho salvo!");
-  fecharProvaModal();
-  loadProvasAluno();
-}
-
-function fecharProvaModal(){
-  provaModal.classList.add("hidden");
-  userBox.classList.remove("hidden");
-}
-
-// HISTÓRICO DE PROVAS DO ALUNO (separado do boletim)
 function loadHistoricoAluno(){
-  let provas = getProvas();
-  let html="";
-  provas.forEach(p=>{
-    let c = getCorrecao(currentUser, p.id);
-    if(c){
-      html += `<div class="prova-card">
-        <h4>${p.nome}</h4>
-        <p>📚 ${p.materia} | Bimestre ${p.bimestre}</p>
-        <p>Nota: <b>${c.nota}</b></p>
-        ${c.comentario?`<p>💬 ${c.comentario}</p>`:""}
-        <span class="badge badge-verde">✅ Corrigida</span>
-      </div>`;
-    }
-  });
-  historicoProvasAluno.innerHTML = html||"Nenhuma prova corrigida ainda.";
+  historicoProvasAluno.innerHTML = "Histórico sincronizado com o Boletim principal.";
 }
 
-// ===================== CORREÇÃO DE PROVAS (ADMIN) =====================
-function getCorrecao(aluno, provaId){
-  let all = JSON.parse(localStorage.getItem("correcoes")||"{}");
-  return all[aluno+"_"+provaId]||null;
-}
-
-function salvarCorrecaoData(aluno, provaId, nota, comentario){
-  let all = JSON.parse(localStorage.getItem("correcoes")||"{}");
-  all[aluno+"_"+provaId] = {nota, comentario, provaId};
-  localStorage.setItem("correcoes", JSON.stringify(all));
-}
-
-function carregarProvasEnviadas(){
-  let provas = getProvas();
-  let html="";
-  Object.keys(localStorage).filter(k=>k.startsWith("respostas_")).forEach(key=>{
-    let aluno = key.replace("respostas_","");
-    let respostas = JSON.parse(localStorage.getItem(key)||"{}");
-    Object.keys(respostas).forEach(provaId=>{
-      let r = respostas[provaId];
-      if(!r.enviada) return;
-      let p = provas.find(x=>x.id===provaId);
-      if(!p) return;
-      let correc = getCorrecao(aluno, provaId);
-      html += `<div class="prova-card">
-        <h4>${p.nome}</h4>
-        <p>👤 Aluno: <b>${aluno}</b> | 📚 ${p.materia} | Bimestre ${p.bimestre}</p>
-        ${correc?`<p>✅ Nota: ${correc.nota}</p>`:'<p class="badge badge-amarelo">⏳ Pendente</p>'}
-        <button class="btn-sm" onclick="abrirCorrecaoModal('${aluno}','${provaId}')">
-          ${correc?"🔄 Re-corrigir":"🔍 Corrigir"}
-        </button>
-      </div>`;
-    });
-  });
-  provasEnviadasAdmin.innerHTML = html||"Nenhuma prova enviada ainda.";
-}
-
-let _correcaoAluno="", _correcaoProvaId="";
-
-function abrirCorrecaoModal(aluno, provaId){
-  _correcaoAluno=aluno; _correcaoProvaId=provaId;
-  let p = getProvas().find(x=>x.id===provaId);
-  if(!p) return;
-  let respostas = JSON.parse(localStorage.getItem("respostas_"+aluno)||"{}");
-  let resp = respostas[provaId]?.respostas||{};
-  correcaoNomeProva.innerText = p.nome;
-  correcaoNomeAluno.innerText = aluno;
-
-  let html="";
-  p.questoes.forEach((q,i)=>{
-    html += `<div class="correção-area">
-      <p><b>Q${i+1}:</b> ${q.enunciado}</p>`;
-    if(q.tipo==="objetiva"||q.tipo==="mista"){
-      let escolha = resp[i]?.escolha;
-      html += `<p>Resposta do aluno: <b>${escolha!==null&&escolha!==undefined ? String.fromCharCode(65+escolha)+") "+q.alternativas[escolha] : "Não respondeu"}</b></p>`;
-      html += `<p>Resposta correta: <b class="badge-verde">${String.fromCharCode(65+q.correta)+") "+q.alternativas[q.correta]}</b></p>`;
-    }
-    if(q.tipo==="dissertativa"||q.tipo==="mista"){
-      html += `<p>Resposta discursiva: <i>${resp[i]?.discursiva||"Em branco"}</i></p>`;
-    }
-    html += `</div>`;
-  });
-
-  correcaoQuestoesView.innerHTML = html;
-  let correc = getCorrecao(aluno, provaId);
-  notaCorrecao.value = correc?.nota||"";
-  comentarioCorrecao.value = correc?.comentario||"";
-  correcaoModal.classList.remove("hidden");
-  adminBox.classList.add("hidden");
-}
-
-function salvarCorrecao(){
-  let nota = parseFloat(notaCorrecao.value);
-  if(isNaN(nota)||nota<0||nota>10){ alert("Nota entre 0 e 10!"); return; }
-  salvarCorrecaoData(_correcaoAluno, _correcaoProvaId, nota, comentarioCorrecao.value);
-  alert("Correção salva!");
-  // Mostrar botão de lançar no boletim
-  btnLancarBoletim.classList.remove("hidden");
-}
-
-// BOTÃO LANÇAR NO BOLETIM: preenche o campo "Prova" da matéria correspondente
-function lancarNoBoletim(){
-  let p = getProvas().find(x=>x.id===_correcaoProvaId);
-  if(!p){ alert("Prova não encontrada!"); return; }
-  let nota = parseFloat(notaCorrecao.value);
-  let d = JSON.parse(localStorage.getItem("boletim_"+_correcaoAluno)||"{}");
-  let b = p.bimestre;
-  if(!d[b]) d[b]={};
-  if(!d[b][p.materia]) d[b][p.materia]={};
-  d[b][p.materia].prova = nota;
-  // Recalcular média se possível
-  let x = d[b][p.materia];
-  let red=+x.red||0, sim=+x.sim||0, vis=+x.vis||0, pv=+x.prova||0;
-  if(red||sim||vis||pv){
-    x.media = calcularMedia(red, sim, vis, pv);
-  }
-  // Recalcular média do bimestre
-  let soma=0,cont=0;
-  materias.forEach(m=>{
-    if(d[b]?.[m]?.media){ soma+=+d[b][m].media; cont++; }
-  });
-  d[b].mediaBimestre = cont?(soma/cont).toFixed(2):"--";
-  localStorage.setItem("boletim_"+_correcaoAluno, JSON.stringify(d));
-  alert(`Nota ${nota} lançada em "${p.materia}" – Bimestre ${b} para ${_correcaoAluno}!`);
-  fecharCorrecaoModal();
-}
-
-function fecharCorrecaoModal(){
-  correcaoModal.classList.add("hidden");
-  adminBox.classList.remove("hidden");
-  btnLancarBoletim.classList.add("hidden");
-  carregarProvasEnviadas();
-}
+function fecharProvaModal(){ provaModal.classList.add("hidden"); userBox.classList.remove("hidden"); }
+function fecharCorrecaoModal(){ correcaoModal.classList.add("hidden"); adminBox.classList.remove("hidden"); }
 </script>
 </body>
 </html>
