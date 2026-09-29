@@ -158,7 +158,7 @@ select, input[type=number], input[type=text], input[type=password], input[type=d
 
     <!-- ABA CRIAR SIMULADO -->
     <div id="tab-simulados" class="tab-content">
-      <h4>Criar / Gerenciar Simulado</h4>
+      <h4 id="tituloFormSimulado">Criar / Gerenciar Simulado</h4>
       <input id="simuladoNome" type="text" placeholder="Nome ou título do simulado *">
       <select id="simuladoMateria">
         <option value="">-- Selecione a Matéria * --</option>
@@ -179,7 +179,10 @@ select, input[type=number], input[type=text], input[type=password], input[type=d
 
       <button onclick="adicionarQuestaoSimulado()">➕ Adicionar Questão</button>
       <div id="questoesSimuladoEditor"></div>
-      <button onclick="salvarSimulado()" class="btn-success" style="margin-top:10px;">💾 Salvar Simulado</button>
+      <div style="display:flex; gap:10px; margin-top:10px;">
+        <button onclick="salvarSimulado()" class="btn-success" style="flex:1;">💾 Salvar Simulado</button>
+        <button id="btnCancelarEdicaoSimulado" onclick="cancelarEdicaoSimulado()" class="btn-danger hidden" style="width:auto; padding:0 20px;">Cancelar Edição</button>
+      </div>
       <hr>
       <h4>Simulados Cadastrados</h4>
       <div id="listaSimulados"></div>
@@ -285,6 +288,7 @@ const competencias = [
 
 let currentUser = "", isAdmin = false, isCoord = false, selectedAluno = "";
 let simuladoQuestoesData = [];
+let simuladoEmEdicaoId = null;
 let _alunoEncontradoLancamento = null;
 
 // ===================== INICIALIZAÇÃO DE CÓDIGOS =====================
@@ -645,10 +649,10 @@ function renderQuestoesSimuladoEditor(){
       </select>
 
       <textarea placeholder="Enunciado da questão *" oninput="simuladoQuestoesData[${i}].enunciado=this.value">${q.enunciado}</textarea>
-      <input type="text" placeholder="URL ou Imagem (Ex: cole a imagem aqui ou cole o link) *" value="${q.imagemUrl||""}" oninput="simuladoQuestoesData[${i}].imagemUrl=this.value">`;
+      <input type="text" placeholder="URL da Imagem (Opcional)" value="${q.imagemUrl||""}" oninput="simuladoQuestoesData[${i}].imagemUrl=this.value">`;
 
     if(q.tipo==="multipla_4" || q.tipo==="multipla_5"){
-      html += `<p style="margin:5px 0 2px 0; font-size:12px;">Alternativas e Resposta Correta:</p>`;
+      html += `<p style="margin:5px 0 2px 0; font-size:12px;">Alternativas e Resposta Correta (Gabarito):</p>`;
       q.alternativas.forEach((alt,ai)=>{
         html += `<div style="display:flex;align-items:center;gap:5px;margin:3px 0;">
           <input type="radio" name="correta_sim_${i}" value="${ai}" ${q.correta===ai?"checked":""}
@@ -665,7 +669,7 @@ function renderQuestoesSimuladoEditor(){
         <option value="1" ${q.correta===1?"selected":""}>Falso (F)</option>
       </select>`;
     } else if(q.tipo==="colunas"){
-      html += `<p style="margin:5px 0 2px 0; font-size:12px;">Pares Correspondentes (Coluna A -> Coluna B):</p>`;
+      html += `<p style="margin:5px 0 2px 0; font-size:12px;">Pares Correspondentes da Questão:</p>`;
       q.colunaA.forEach((itemA, ci)=>{
         html += `<div style="display:flex; gap:5px; margin:3px 0;">
           <input type="text" placeholder="Item Coluna A (${ci+1}) *" value="${itemA.replace(/"/g,'&quot;')}" oninput="simuladoQuestoesData[${i}].colunaA[${ci}]=this.value" style="flex:1;">
@@ -716,22 +720,50 @@ function salvarSimulado(){
 
   let totalVal = simuladoQuestoesData.reduce((acc, curr)=> acc + (parseFloat(curr.valor)||0), 0);
   let simulados = getSimulados();
-  let id = Date.now().toString();
 
-  simulados.push({
-    id, nome, materia, bimestre, data, descricao,
-    valorTotal: totalVal,
-    questoes: JSON.parse(JSON.stringify(simuladoQuestoesData))
-  });
+  if(simuladoEmEdicaoId){
+    // ATUALIZA O SIMULADO EXISTENTE (SEM DUPLICAR OU APAGAR)
+    let index = simulados.findIndex(s => s.id === simuladoEmEdicaoId);
+    if(index !== -1){
+      simulados[index] = {
+        id: simuladoEmEdicaoId,
+        nome, materia, bimestre, data, descricao,
+        valorTotal: totalVal,
+        questoes: JSON.parse(JSON.stringify(simuladoQuestoesData))
+      };
+      alert("Simulado atualizado com sucesso!");
+    }
+  } else {
+    // CRIA UM NOVO SIMULADO
+    let id = Date.now().toString();
+    simulados.push({
+      id, nome, materia, bimestre, data, descricao,
+      valorTotal: totalVal,
+      questoes: JSON.parse(JSON.stringify(simuladoQuestoesData))
+    });
+    alert("Simulado salvo com sucesso!");
+  }
 
   salvarSimuladosStorage(simulados);
+  limparFormularioSimulado();
+  loadSimulados();
+}
+
+function limparFormularioSimulado(){
+  simuladoEmEdicaoId = null;
   simuladoQuestoesData = [];
   document.getElementById("simuladoNome").value="";
+  document.getElementById("simuladoMateria").value="";
+  document.getElementById("simuladoBimestre").value="1";
   document.getElementById("simuladoDescricao").value="";
   document.getElementById("simuladoData").value="";
+  document.getElementById("tituloFormSimulado").innerText = "Criar / Gerenciar Simulado";
+  document.getElementById("btnCancelarEdicaoSimulado").classList.add("hidden");
   renderQuestoesSimuladoEditor();
-  alert("Simulado salvo com sucesso!");
-  loadSimulados();
+}
+
+function cancelarEdicaoSimulado(){
+  limparFormularioSimulado();
 }
 
 function loadSimulados(){
@@ -761,15 +793,20 @@ function excluirSimulado(id){
 function editarSimulado(id){
   let s = getSimulados().find(x=>x.id===id);
   if(!s) return;
+  
+  simuladoEmEdicaoId = s.id;
   document.getElementById("simuladoNome").value = s.nome;
   document.getElementById("simuladoMateria").value = s.materia;
   document.getElementById("simuladoBimestre").value = s.bimestre;
   document.getElementById("simuladoData").value = s.data||"";
   document.getElementById("simuladoDescricao").value = s.descricao||"";
+  
+  document.getElementById("tituloFormSimulado").innerText = "✏️ Editando Simulado: " + s.nome;
+  document.getElementById("btnCancelarEdicaoSimulado").classList.remove("hidden");
+  
   simuladoQuestoesData = JSON.parse(JSON.stringify(s.questoes));
   renderQuestoesSimuladoEditor();
-  excluirSimulado(id);
-  alert("Simulado carregado no formulário para edição.");
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function imprimirSimulado(id){
@@ -819,7 +856,6 @@ function imprimirSimulado(id){
       html += `<div class="alt-print">( &nbsp; ) Verdadeiro (V)</div>`;
       html += `<div class="alt-print">( &nbsp; ) Falso (F)</div>`;
     } else if(q.tipo === "colunas"){
-      // Gera versão embaralhada da coluna B
       let colBEmbaralhada = q.colunaB.map((texto, index) => ({ texto, orgaoIndex: index + 1 }));
       colBEmbaralhada.sort(() => 0.5 - Math.random());
 
@@ -843,7 +879,7 @@ function imprimirSimulado(id){
   window.print();
 }
 
-// ===================== CORREÇÃO E LANÇAMENTO RÁPIDO =====================
+// ===================== CORREÇÃO E LANÇAMENTO AUTOMÁTICO =====================
 function prepareTabLancarSimulados(){
   let simulados = getSimulados();
   let sel = document.getElementById("lancarSimuladoSelect");
@@ -885,12 +921,33 @@ function buscarAlunoPorCodigo(){
 
   let html = "";
   s.questoes.forEach((q, i) => {
-    html += `<div class="crit-row" style="background:rgba(255,255,255,0.05); padding:8px; border-radius:6px;">
-      <label><b>Q${i+1}</b> - Valor: ${q.valor}pt</label>
-      <select id="resp_aluno_${i}" style="width:180px;">
-        <option value="0">❌ Errou / Em Branco (0pt)</option>
-        <option value="1">✅ Acertou (${q.valor}pt)</option>
-      </select></div>`;
+    html += `<div class="questao-box">
+      <p style="margin:0 0 6px 0; font-weight:bold;">Questão ${i+1} (${q.valor}pt)</p>`;
+
+    if(q.tipo.startsWith("multipla")){
+      html += `<label style="font-size:12px;">Selecione a resposta marcada pelo aluno:</label>
+      <select id="resp_aluno_${i}">
+        <option value="">-- Não respondeu / Em branco --</option>`;
+      q.alternativas.forEach((alt, ai)=>{
+        html += `<option value="${ai}">Opção ${String.fromCharCode(65+ai)} (${alt.substring(0,30)}${alt.length>30?'...':''})</option>`;
+      });
+      html += `</select>`;
+    } else if(q.tipo === "vf"){
+      html += `<label style="font-size:12px;">Selecione a resposta marcada pelo aluno:</label>
+      <select id="resp_aluno_${i}">
+        <option value="">-- Não respondeu / Em branco --</option>
+        <option value="0">Verdadeiro (V)</option>
+        <option value="1">Falso (F)</option>
+      </select>`;
+    } else if(q.tipo === "colunas"){
+      html += `<label style="font-size:12px;">O aluno associou as colunas corretamente?</label>
+      <select id="resp_aluno_${i}">
+        <option value="">-- Não / Errou --</option>
+        <option value="correto">✅ Sim, associou corretamente</option>
+      </select>`;
+    }
+
+    html += `</div>`;
   });
 
   questoesFormLancamento.innerHTML = html;
@@ -906,8 +963,16 @@ function calcularELancarSimulado(){
   let pontosObtidos = 0;
   s.questoes.forEach((q, i) => {
     let el = document.getElementById(`resp_aluno_${i}`);
-    if(el && el.value === "1"){
-      pontosObtidos += (parseFloat(q.valor)||0);
+    if(el && el.value !== ""){
+      if(q.tipo.startsWith("multipla") || q.tipo === "vf"){
+        if(parseInt(el.value) === parseInt(q.correta)){
+          pontosObtidos += (parseFloat(q.valor)||0);
+        }
+      } else if(q.tipo === "colunas"){
+        if(el.value === "correto"){
+          pontosObtidos += (parseFloat(q.valor)||0);
+        }
+      }
     }
   });
 
@@ -937,7 +1002,7 @@ function calcularELancarSimulado(){
 
   localStorage.setItem("boletim_"+_alunoEncontradoLancamento, JSON.stringify(d));
 
-  alert(`Correção Lançada!\nAluno: ${_alunoEncontradoLancamento}\nNota em ${m} (${b}º Bimestre): ${notaFinalCalc}`);
+  alert(`Correção Concluída!\nAluno: ${_alunoEncontradoLancamento}\nNota em ${m} (${b}º Bimestre): ${notaFinalCalc} / ${s.valorTotal.toFixed(2)} pts`);
   resetFormLancamento();
 }
 
