@@ -51,7 +51,7 @@ th{background:rgba(0,0,0,0.4);}
 .btn-success:hover{background:#0d0;}
 .info-box{background:rgba(0,198,255,0.1);border:1px solid #00c6ff;border-radius:8px;padding:10px;margin:8px 0;font-size:13px;}
 textarea{background:#fff;color:#000;min-height:80px;resize:vertical;}
-select, input[type=number], input[type=text], input[type=password], input[type=date]{background:#fff;}
+select, input[type=number], input[type=text], input[type=password], input[type=date], input[type=time]{background:#fff;}
 
 /* ESTILOS DE IMPRESSÃO DO SIMULADO */
 #areaImpressao { display: none; }
@@ -81,6 +81,14 @@ select, input[type=number], input[type=text], input[type=password], input[type=d
   .alt-print { margin-left: 15px; font-size: 13px; margin-top: 4px; }
   .colunas-container { display: flex; gap: 20px; margin-top: 8px; }
   .coluna-box { flex: 1; border: 1px dashed #666; padding: 8px; border-radius: 4px; }
+  
+  /* ESTILOS DA FOLHA DE RESPOSTAS DESTACÁVEL */
+  .folha-respostas-page { page-break-before: always; margin-top: 20px; }
+  .linha-corte { border-top: 2px dashed #000; margin: 20px 0; text-align: center; font-size: 12px; font-weight: bold; position: relative; }
+  .linha-corte span { position: relative; top: -10px; background: #fff; padding: 0 10px; }
+  .gabarito-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
+  .gabarito-item { border: 1px solid #666; padding: 6px; font-size: 12px; }
+  .bolinha { display: inline-block; width: 14px; height: 14px; border: 1px solid #000; border-radius: 50%; margin: 0 3px; vertical-align: middle; text-align: center; font-size: 9px; line-height: 12px; }
 }
 </style>
 </head>
@@ -119,6 +127,10 @@ select, input[type=number], input[type=text], input[type=password], input[type=d
       <button class="tab-btn" onclick="showGestaoTab('simulados')">📝 Criar Simulado</button>
       <button class="tab-btn" onclick="showGestaoTab('listaAlunos')">🔑 Lista (Códigos)</button>
       <button class="tab-btn" onclick="showGestaoTab('lancarSimulados')">🎯 Lançar Simulados</button>
+      <button class="tab-btn" onclick="showGestaoTab('analiseQuestoes')">📊 Análise por Questão</button>
+      <button class="tab-btn" onclick="showGestaoTab('planosAula')">📖 Planos de Aula</button>
+      <button class="tab-btn" onclick="showGestaoTab('gradeHoraria')">⏰ Grade Horária</button>
+      <button class="tab-btn" onclick="showGestaoTab('calendario')">📅 Calendário Escolar</button>
       <button class="tab-btn" onclick="showGestaoTab('ranking')">🏆 Ranking</button>
       <button class="tab-btn" onclick="showGestaoTab('recuperacao')">📉 Recuperação</button>
     </div>
@@ -198,6 +210,10 @@ select, input[type=number], input[type=text], input[type=password], input[type=d
     <!-- ABA LANÇAR SIMULADOS -->
     <div id="tab-lancarSimulados" class="tab-content">
       <h3>🎯 Correção e Lançamento Direto de Simulado</h3>
+      <div style="margin-bottom:15px;">
+        <button class="btn-success" onclick="exportarNotasSimuladosCSV()">📥 Exportar Notas Unificadas (Planilha CSV)</button>
+      </div>
+
       <div class="questao-box">
         <label>1. Selecione o Simulado:</label>
         <select id="lancarSimuladoSelect" onchange="resetFormLancamento()"></select>
@@ -222,6 +238,432 @@ select, input[type=number], input[type=text], input[type=password], input[type=d
           <button onclick="calcularELancarSimulado()" class="btn-success" style="font-size:16px;">💾 Calcular e Lançar no Boletim</button>
         </div>
       </div>
+    </div>
+
+    <!-- ABA ANÁLISE POR QUESTÃO -->
+    <div id="tab-analiseQuestoes" class="tab-content">
+      <h3>📊 Análise de Desempenho Pedagógico por Questão</h3>
+      <div class="questao-box">
+        <label>Selecione o Simulado para Analisar:</label>
+        <select id="analiseSimuladoSelect" onchange="carregarAnaliseQuestoes()"></select>
+      </div>
+      <div id="relatorioAnaliseQuestoes"></div>
+    </div>
+
+    <!-- ABA PLANOS DE AULA -->
+    <div id="tab-planosAula" class="tab-content">
+      <h3>📖 Módulo de Plano de Aula</h3>
+      
+      <div class="questao-box" id="formPlanoAulaBox">
+        <h4 id="tituloFormPlano">Cadastrar / Editar Plano de Aula</h4>
+        <div style="display:flex; gap:10px;">
+          <select id="planoMateria" style="flex:1;"></select>
+          <select id="planoTurma" style="flex:1;">
+            <option value="6º Ano A">6º Ano A</option>
+            <option value="7º Ano A">7º Ano A</option>
+            <option value="8º Ano A">8º Ano A</option>
+            <option value="9º Ano A">9º Ano A</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:5px;">
+          <div style="flex:1;">
+            <label style="font-size:12px;">Data Início:</label>
+            <input id="planoDataInicio" type="date">
+          </div>
+          <div style="flex:1;">
+            <label style="font-size:12px;">Data Fim:</label>
+            <input id="planoDataFim" type="date">
+          </div>
+          <div style="flex:1;">
+            <label style="font-size:12px;">Status:</label>
+            <select id="planoStatus">
+              <option value="Rascunho">📝 Rascunho</option>
+              <option value="Publicado">✅ Publicado</option>
+            </select>
+          </div>
+        </div>
+
+        <textarea id="planoTema" placeholder="Tema e Conteúdo Programático *" style="margin-top:8px;"></textarea>
+        <textarea id="planoObjetivos" placeholder="Objetivos de Aprendizagem *"></textarea>
+        <textarea id="planoEtapas" placeholder="Etapas do Desenvolvimento / Atividades *"></textarea>
+        <textarea id="planoMateriais" placeholder="Materiais Necessários e Recursos"></textarea>
+        <textarea id="planoTarefa" placeholder="Tarefa de Casa Opcional"></textarea>
+        <textarea id="planoObservacoes" placeholder="Observações do Professor / Coordenação"></textarea>
+
+        <div style="display:flex; gap:10px; margin-top:8px;">
+          <button onclick="salvarPlanoAula()" class="btn-success" style="flex:1;">💾 Salvar Plano de Aula</button>
+          <button id="btnCancelarPlano" onclick="limparFormPlanoAula()" class="btn-danger hidden" style="width:auto;">Cancelar</button>
+        </div>
+      </div>
+
+      <hr>
+      <h4>Filtro de Planos Cadastrados:</h4>
+      <div style="display:flex; gap:10px; margin-bottom:10px;">
+        <select id="filtroPlanoMateria" onchange="renderListaPlanosAula()" style="flex:1;">
+          <option value="">-- Todas as Matérias --</option>
+        </select>
+        <select id="filtroPlanoStatus" onchange="renderListaPlanosAula()" style="flex:1;">
+          <option value="">-- Todos os Status --</option>
+          <option value="Rascunho">Rascunho</option>
+          <option value="Publicado">Publicado</option>
+        </select>
+      </div>
+      <div id="listaPlanosAula"></div>
+    </div>
+
+    <!-- ABA GRADE HORÁRIA -->
+    <div id="tab-gradeHoraria" class="tab-content">
+      <h3>⏰ Grade Horária Semanal</h3>
+      
+      <div class="questao-box" id="formGradeBox">
+        <h4>Adicionar Horário de Aula</h4>
+        <div style="display:flex; gap:10px;">
+          <select id="gradeDiaSemana" style="flex:1;">
+            <option value="Segunda-feira">Segunda-feira</option>
+            <option value="Terça-feira">Terça-feira</option>
+            <option value="Quarta-feira">Quarta-feira</option>
+            <option value="Quinta-feira">Quinta-feiraAqui está o arquivo completo em HTML, CSS e JavaScript integrado diretamente na sua aplicação Web original. Todas as 7 novas funcionalidades foram inseridas sem a necessidade de um banco de dados externo ou SQL, utilizando exclusivamente o `localStorage` do próprio navegador e o sistema de impressão nativo.
+
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Portal Escolar</title>
+<style>
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  color:white;
+  min-height:100vh;
+}
+.container{max-width:1200px;margin:auto;padding:30px;}
+.box{background:rgba(0,0,0,0.45);padding:20px;border-radius:10px;margin-bottom:20px;}
+input,select,button,textarea{width:100%;padding:8px;margin:4px 0;border:none;border-radius:6px;color:#000;}
+button{background:#00c6ff;font-weight:bold;cursor:pointer;color:#000;}
+button:hover{background:#0072ff;color:#fff;}
+.hidden{display:none !important;}
+table{width:100%;border-collapse:collapse;margin-top:10px;}
+th,td{border:1px solid rgba(255,255,255,0.2);padding:6px;text-align:center;}
+th{background:rgba(0,0,0,0.4);}
+.reprovado{color:#ff4d4d;font-weight:bold;}
+.ouro{color:gold;font-weight:bold;}
+.prata{color:silver;font-weight:bold;}
+
+/* ESTILOS DE NAVEGAÇÃO E ABAS */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px;}
+.tab-btn{width:auto;padding:8px 16px;background:rgba(0,198,255,0.3);color:#fff;border-radius:20px;font-size:13px;}
+.tab-btn.active{background:#00c6ff;color:#000;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* ELEMENTOS DIVERSOS */
+.competencia-box{background:rgba(255,255,255,0.07);border-radius:8px;padding:12px;margin-bottom:10px;}
+.competencia-box h4{margin:0 0 8px;color:#00c6ff;}
+.crit-row{display:flex;align-items:center;gap:8px;margin:4px 0;}
+.crit-row label{flex:1;font-size:13px;}
+.crit-row input{width:80px;flex:none;}
+.crit-total{font-weight:bold;color:#0f0;margin-top:6px;}
+.nota-final-red{font-size:1.3em;font-weight:bold;color:gold;margin:10px 0;}
+.prova-card{background:rgba(255,255,255,0.07);border-radius:8px;padding:12px;margin-bottom:10px;}
+.prova-card h4{margin:0 0 6px;color:#00c6ff;}
+.prova-card p{margin:2px 0;font-size:13px;}
+.questao-box{background:rgba(0,0,0,0.3);border-radius:8px;padding:12px;margin:8px 0;}
+.btn-sm{width:auto;padding:5px 12px;font-size:12px;margin:3px;}
+.btn-danger{background:#c00;color:#fff;}
+.btn-danger:hover{background:#f00;}
+.btn-success{background:#0a0;color:#fff;}
+.btn-success:hover{background:#0d0;}
+.info-box{background:rgba(0,198,255,0.1);border:1px solid #00c6ff;border-radius:8px;padding:10px;margin:8px 0;font-size:13px;}
+textarea{background:#fff;color:#000;min-height:80px;resize:vertical;}
+select, input[type=number], input[type=text], input[type=password], input[type=date], input[type=time]{background:#fff;}
+
+/* ESTILOS DE IMPRESSÃO DO SIMULADO */
+#areaImpressao { display: none; }
+
+@media print {
+  body * { visibility: hidden; }
+  #areaImpressao, #areaImpressao * { visibility: visible; }
+  #areaImpressao { 
+    display: block !important; 
+    position: absolute; 
+    left: 0; 
+    top: 0; 
+    width: 100%; 
+    color: black !important; 
+    background: white !important; 
+    padding: 20px; 
+  }
+  .cabecalho-impressao { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+  .cabecalho-impressao h2 { margin: 0; text-align: center; text-transform: uppercase; font-size: 18px; }
+  .cabecalho-impressao h3 { margin: 5px 0 15px 0; text-align: center; color: #000; font-size: 16px; }
+  .campos-aluno { border: 1px solid #000; padding: 10px; margin-bottom: 20px; font-size: 13px; }
+  .campos-aluno table { width: 100%; border: none; }
+  .campos-aluno td { border: none; text-align: left; padding: 4px; color: #000; }
+  .questao-print { margin-bottom: 18px; page-break-inside: avoid; color: #000; }
+  .questao-print p { margin: 4px 0; font-size: 13.5px; line-height: 1.4; }
+  .questao-print img { max-width: 100% !important; height: auto !important; display: block !important; margin: 10px 0 !important; visibility: visible !important; }
+  .alt-print { margin-left: 15px; font-size: 13px; margin-top: 4px; }
+  .colunas-container { display: flex; gap: 20px; margin-top: 8px; }
+  .coluna-box { flex: 1; border: 1px dashed #666; padding: 8px; border-radius: 4px; }
+  
+  .folha-resposta {
+    page-break-before: always;
+    border-top: 2px dashed #000;
+    padding-top: 20px;
+    margin-top: 30px;
+  }
+  .grid-gabarito {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+  }
+  .item-gabarito {
+    font-size: 12px;
+    border: 1px solid #ccc;
+    padding: 4px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .bolinhas { display: flex; gap: 6px; font-weight: bold; }
+  .bolinha { border: 1px solid #000; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- LOGIN -->
+<div class="box" id="loginBox">
+  <h2>Login</h2>
+  <input id="loginUser" placeholder="Usuário">
+  <input id="loginPass" type="password" placeholder="Senha">
+  <button onclick="login()">Entrar</button>
+  <button onclick="showRegister()">Criar conta</button>
+</div>
+
+<!-- CADASTRO -->
+<div class="box hidden" id="registerBox">
+  <h2>Criar conta</h2>
+  <input id="regUser" placeholder="Usuário">
+  <input id="regPass" type="password" placeholder="Senha">
+  <button onclick="register()">Registrar</button>
+  <button onclick="backLogin()">Voltar</button>
+</div>
+
+<!-- SITE PRINCIPAL -->
+<div class="hidden" id="siteBox">
+  <h2>📘 Portal Escolar</h2>
+
+  <!-- PAINEL GESTÃO (ADMIN / COORDENAÇÃO) -->
+  <div class="box hidden" id="gestaoBox">
+    <h3 id="gestaoTitulo">Painel de Gestão</h3>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showGestaoTab('boletim')">📋 Boletim</button>
+      <button class="tab-btn" onclick="showGestaoTab('redacao')">✍️ Redação</button>
+      <button class="tab-btn" onclick="showGestaoTab('simulados')">📝 Criar Simulado</button>
+      <button class="tab-btn" onclick="showGestaoTab('listaAlunos')">🔑 Lista (Códigos)</button>
+      <button class="tab-btn" onclick="showGestaoTab('lancarSimulados')">🎯 Lançar Simulados</button>
+      <button class="tab-btn" onclick="showGestaoTab('analiseQuestoes')">📊 Análise de Questões</button>
+      <button class="tab-btn" onclick="showGestaoTab('planosAula')">📂 Planos de Aula</button>
+      <button class="tab-btn" onclick="showGestaoTab('horarios')">🕒 Horários</button>
+      <button class="tab-btn" onclick="showGestaoTab('calendario')">📅 Calendário Escolar</button>
+      <button class="tab-btn" onclick="showGestaoTab('ranking')">🏆 Ranking</button>
+      <button class="tab-btn" onclick="showGestaoTab('recuperacao')">📉 Recuperação</button>
+    </div>
+
+    <!-- ABA BOLETIM -->
+    <div id="tab-boletim" class="tab-content active">
+      <select id="bimestreGestao" onchange="carregarNotasGestao()">
+        <option value="1">1º Bimestre</option>
+        <option value="2">2º Bimestre</option>
+        <option value="3">3º Bimestre</option>
+        <option value="4">4º Bimestre</option>
+      </select>
+      <div id="userListGestao"></div>
+      <h4 id="selectedUserGestao"></h4>
+      <h4>Média Geral do Aluno: <span id="mediaAlunoGestao">--</span></h4>
+      <h4>📋 Chamada</h4>
+      <select id="presencaGestao">
+        <option value="Presente">Presente</option>
+        <option value="Falta">Falta</option>
+      </select>
+      <div id="materiasInputs"></div>
+      <button id="btnSalvarBoletim" onclick="salvarNotasBoletim()">Salvar / Atualizar Notas</button>
+    </div>
+
+    <!-- ABA REDAÇÃO -->
+    <div id="tab-redacao" class="tab-content">
+      <h3>✍️ Correção de Redação por Competências</h3>
+      <p>Selecione o aluno:</p>
+      <div id="userListRedacao"></div>
+      <div id="redacaoCorrecaoArea" class="hidden">
+        <h4>Aluno: <span id="alunoRedacaoNome"></span></h4>
+        <div id="competenciasArea"></div>
+        <div class="nota-final-red">Nota Final da Redação: <span id="notaFinalRedacao">0,00</span> / 10,00</div>
+        <button onclick="salvarRedacao()">💾 Salvar Nota de Redação</button>
+      </div>
+    </div>
+
+    <!-- ABA CRIAR SIMULADO -->
+    <div id="tab-simulados" class="tab-content">
+      <h4 id="tituloFormSimulado">Criar / Gerenciar Simulado</h4>
+      <input id="simuladoNome" type="text" placeholder="Nome ou título do simulado *">
+      <select id="simuladoMateria">
+        <option value="">-- Selecione a Matéria * --</option>
+      </select>
+      <select id="simuladoBimestre">
+        <option value="1">1º Bimestre</option>
+        <option value="2">2º Bimestre</option>
+        <option value="3">3º Bimestre</option>
+        <option value="4">4º Bimestre</option>
+      </select>
+      <input id="simuladoData" type="date">
+      <textarea id="simuladoDescricao" placeholder="Instruções ou descrição opcional"></textarea>
+      
+      <div class="info-box">
+        <b>Status das Questões:</b> <span id="qtdQuestoesInfo">0</span> / 50 questões adicionadas.<br>
+        <b>Valor Total do Simulado:</b> <span id="valorTotalInfo" style="color:gold; font-weight:bold;">0.00</span> pt(s)
+      </div>
+
+      <button onclick="adicionarQuestaoSimulado()">➕ Adicionar Questão</button>
+      <div id="questoesSimuladoEditor"></div>
+      <div style="display:flex; gap:10px; margin-top:10px;">
+        <button onclick="salvarSimulado()" class="btn-success" style="flex:1;">💾 Salvar Simulado</button>
+        <button id="btnCancelarEdicaoSimulado" onclick="cancelarEdicaoSimulado()" class="btn-danger hidden" style="width:auto; padding:0 20px;">Cancelar Edição</button>
+      </div>
+      <hr>
+      <h4>Simulados Cadastrados</h4>
+      <div id="listaSimulados"></div>
+    </div>
+
+    <!-- ABA LISTA DE CÓDIGOS DE ALUNOS -->
+    <div id="tab-listaAlunos" class="tab-content">
+      <h3>🔑 Código Único dos Alunos (5 dígitos)</h3>
+      <p style="font-size:13px; color:#ccc;">Estes códigos fixos de 5 dígitos são gerados automaticamente para localização rápida na correção de simulados.</p>
+      <button onclick="exportarRelatorioNotasCSV()" class="btn-success" style="margin-bottom: 15px;">📥 Exportar Planilha Unificada de Notas (CSV)</button>
+      <div id="tabelaListaCodigos"></div>
+    </div>
+
+    <!-- ABA LANÇAR SIMULADOS -->
+    <div id="tab-lancarSimulados" class="tab-content">
+      <h3>🎯 Correção e Lançamento Direto de Simulado</h3>
+      <div class="questao-box">
+        <label>1. Selecione o Simulado:</label>
+        <select id="lancarSimuladoSelect" onchange="resetFormLancamento()"></select>
+
+        <label style="margin-top:10px; display:block;">2. Código de 5 dígitos do Aluno:</label>
+        <div style="display:flex; gap:10px;">
+          <input id="codigoAlunoBusca" type="text" maxlength="5" placeholder="Ex: 84920" style="flex:1;">
+          <button onclick="buscarAlunoPorCodigo()" style="width:auto; padding:0 20px;">🔍 Buscar Aluno</button>
+        </div>
+      </div>
+
+      <div id="areaLancamentoForm" class="hidden">
+        <div class="info-box">
+          <h4>Aluno Identificado: <span id="alunoIdentificadoNome" style="color:gold;"></span> (Código: <span id="alunoIdentificadoCodigo"></span>)</h4>
+          <p id="infoStatusLancamento" style="margin:0; font-size:12px;"></p>
+        </div>
+
+        <h4>Registro de Respostas do Papel:</h4>
+        <div id="questoesFormLancamento"></div>
+
+        <div style="margin-top:15px; background:rgba(0,0,0,0.4); padding:15px; border-radius:8px;">
+          <button onclick="calcularELancarSimulado()" class="btn-success" style="font-size:16px;">💾 Calcular e Lançar no Boletim</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA ANÁLISE DE QUESTÕES -->
+    <div id="tab-analiseQuestoes" class="tab-content">
+      <h3>📊 Análise Pedagógica por Questão</h3>
+      <select id="analiseSimuladoSelect" onchange="gerarAnaliseQuestoes()"></select>
+      <div id="resultadoAnaliseQuestoes" style="margin-top:15px;"></div>
+    </div>
+
+    <!-- ABA PLANOS DE AULA -->
+    <div id="tab-planosAula" class="tab-content">
+      <h3 id="planoFormTitulo">📂 Módulo de Plano de Aula</h3>
+      <input id="planoTema" type="text" placeholder="Tema/Conteúdo Principal *">
+      <div style="display:flex; gap:10px;">
+        <select id="planoDisciplina" style="flex:1;"></select>
+        <input id="planoTurma" type="text" placeholder="Turma/Série *" style="flex:1;">
+      </div>
+      <div style="display:flex; gap:10px;">
+        <input id="planoDataInicio" type="date" style="flex:1;">
+        <input id="planoDataFim" type="date" style="flex:1;">
+      </div>
+      <textarea id="planoObjetivos" placeholder="Objetivos de Aprendizagem *"></textarea>
+      <textarea id="planoEtapas" placeholder="Etapas da Aula / Atividades *"></textarea>
+      <textarea id="planoMateriais" placeholder="Materiais Necessários"></textarea>
+      <textarea id="planoTarefa" placeholder="Tarefa de Casa"></textarea>
+      <textarea id="planoObs" placeholder="Observações"></textarea>
+      
+      <div style="display:flex; gap:10px; margin-top:10px;">
+        <button onclick="salvarPlanoAula('RASCUNHO')" style="background:orange; color:#000;">💾 Salvar Rascunho</button>
+        <button onclick="salvarPlanoAula('PUBLICADO')" class="btn-success">🚀 Publicar Plano</button>
+        <button id="btnCancelarPlano" onclick="limparFormPlano()" class="btn-danger hidden">Cancelar</button>
+      </div>
+
+      <hr style="margin:20px 0;">
+      <h4>Planos de Aula Registrados</h4>
+      <div id="listaPlanosAula"></div>
+    </div>
+
+    <!-- ABA HORÁRIOS DA GRADE -->
+    <div id="tab-horarios" class="tab-content">
+      <h3>🕒 Módulo de Grade e Horários</h3>
+      <div class="questao-box">
+        <h4>Cadastrar/Atualizar Horário</h4>
+        <div style="display:flex; gap:10px;">
+          <select id="horarioDia" style="flex:1;">
+            <option value="Segunda-feira">Segunda-feira</option>
+            <option value="Terça-feira">Terça-feira</option>
+            <option value="Quarta-feira">Quarta-feira</option>
+            <option value="Quinta-feira">Quinta-feira</option>
+            <option value="Sexta-feira">Sexta-feira</option>
+          </select>
+          <input id="horarioTurma" type="text" placeholder="Turma *" style="flex:1;">
+          <select id="horarioDisciplina" style="flex:1;"></select>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <input id="horarioInicio" type="time" style="flex:1;">
+          <input id="horarioFim" type="time" style="flex:1;">
+          <input id="horarioProfessor" type="text" placeholder="Nome do Professor *" style="flex:1;">
+        </div>
+        <button onclick="salvarHorarioGrade()" class="btn-success" style="margin-top:10px;">➕ Adicionar À Grade</button>
+      </div>
+
+      <h4>Grade Semanal Atual</h4>
+      <div id="tabelaGradeHoraria"></div>
+    </div>
+
+    <!-- ABA CALENDÁRIO ESCOLAR INTEGRADO -->
+    <div id="tab-calendario" class="tab-content">
+      <h3>📅 Calendário Escolar Integrado</h3>
+      <div class="questao-box">
+        <h4>Cadastrar Evento Manual</h4>
+        <input id="calTitulo" type="text" placeholder="Título do Evento *">
+        <div style="display:flex; gap:10px;">
+          <select id="calTipo" style="flex:1;">
+            <option value="REUNIAO">Reunião</option>
+            <option value="FERIADO">Feriado</option>
+            <option value="EVENTO">Evento Cultural/Escolar</option>
+            <option value="TAREFA">Tarefa/Trabalho</option>
+          </select>
+          <input id="calDataInicio" type="date" style="flex:1;">
+          <input id="calDataFim" type="date" style="flex:1;">
+        </div>
+        <button onclick="salvarEventoCalendarioManual()" class="btn-success" style="margin-top:10px;">➕ Adicionar ao Calendário</button>
+      </div>
+
+      <h4>Cronograma de Eventos e Simulados</h4>
+      <div id="listaCalendario"></div>
     </div>
 
     <!-- ABA RANKING -->
@@ -266,7 +708,7 @@ select, input[type=number], input[type=text], input[type=password], input[type=d
 </div><!-- /siteBox -->
 </div><!-- /container -->
 
-<!-- ÁREA EXCLUSIVA PARA IMPRESSÃO DO SIMULADO -->
+<!-- ÁREA EXCLUSIVA PARA IMPRESSÃO DO SIMULADO / GABARITO -->
 <div id="areaImpressao"></div>
 
 <script>
@@ -290,6 +732,7 @@ let currentUser = "", isAdmin = false, isCoord = false, selectedAluno = "";
 let simuladoQuestoesData = [];
 let simuladoEmEdicaoId = null;
 let _alunoEncontradoLancamento = null;
+let planoEmEdicaoId = null;
 
 // ===================== INICIALIZAÇÃO DE CÓDIGOS =====================
 function inicializarCodigosAlunos(){
@@ -370,6 +813,10 @@ function showGestaoTab(tab){
   if(tab==='simulados') loadSimulados();
   if(tab==='listaAlunos') renderListaCodigos();
   if(tab==='lancarSimulados') prepareTabLancarSimulados();
+  if(tab==='analiseQuestoes') prepareTabAnaliseQuestoes();
+  if(tab==='planosAula') loadPlanosAula();
+  if(tab==='horarios') loadGradeHoraria();
+  if(tab==='calendario') loadCalendarioEscolar();
   if(tab==='ranking') gerarRanking();
   if(tab==='recuperacao') gerarRecuperacao();
   if(tab==='redacao') loadRedacao();
@@ -388,10 +835,20 @@ function loadGestao(){
   userBox.classList.add("hidden");
   gestaoTitulo.innerText = isAdmin ? "👨‍🏫 Painel Administrador (Acesso Total)" : "👩‍💼 Painel da Coordenação";
 
-  // Preenche Matérias no formulário de Simulado
+  // Preenche Matérias no formulário de Simulado, Plano e Horários
   let selSim = document.getElementById("simuladoMateria");
+  let selPlano = document.getElementById("planoDisciplina");
+  let selHorario = document.getElementById("horarioDisciplina");
+  
   selSim.innerHTML = '<option value="">-- Selecione a Matéria * --</option>';
-  materias.forEach(m=>{ selSim.innerHTML += `<option value="${m}">${m}</option>`; });
+  selPlano.innerHTML = '<option value="">-- Selecione a Disciplina * --</option>';
+  selHorario.innerHTML = '<option value="">-- Selecione a Disciplina * --</option>';
+
+  materias.forEach(m=>{ 
+    selSim.innerHTML += `<option value="${m}">${m}</option>`; 
+    selPlano.innerHTML += `<option value="${m}">${m}</option>`;
+    selHorario.innerHTML += `<option value="${m}">${m}</option>`;
+  });
 
   // Preenche Entradas do Boletim
   materiasInputs.innerHTML = "";
@@ -558,7 +1015,7 @@ function salvarRedacao(){
   alert(`Redação salva! Nota: ${dados.notaFinal.toFixed(2)}`);
 }
 
-// ===================== RECUPERAÇÃO / RANKING =====================
+// ===================== RECUPERAÇÃO / RANKING / EXPORTAÇÃO CSV =====================
 function notaHTML(v){
   if(v==="--" || v===undefined) return "--";
   return `<span class="${v<6?'reprovado':''}">${v}</span>`;
@@ -608,6 +1065,42 @@ function renderListaCodigos(){
   tabelaListaCodigos.innerHTML = html;
 }
 
+// FUNCIONALIDADE 1: EXPORTAÇÃO DE NOTAS DE SIMULADOS (CSV UNIFICADO)
+function exportarRelatorioNotasCSV(){
+  let linhas = [["Codigo_Aluno", "Nome_Aluno", "Simulado", "Disciplina", "Bimestre", "Nota_Final", "Percentual_Acerto"]];
+  let simulados = getSimulados();
+  let alunosKeys = Object.keys(localStorage).filter(k => k.startsWith("user_"));
+
+  alunosKeys.forEach(k => {
+    let aluno = k.replace("user_", "");
+    let cod = localStorage.getItem("cod_user_" + aluno) || "SEM_COD";
+    let boletim = JSON.parse(localStorage.getItem("boletim_" + aluno) || "{}");
+
+    simulados.forEach(s => {
+      let b = s.bimestre;
+      let m = s.materia;
+      let dadoSim = boletim[b]?.[m];
+
+      if(dadoSim && dadoSim.simuloId === s.id || (dadoSim && dadoSim.sim !== undefined)){
+        let nota = parseFloat(dadoSim.sim) || 0.0;
+        let pct = s.valorTotal > 0 ? ((nota / s.valorTotal) * 100).toFixed(2) : "0.00";
+        linhas.push([cod, aluno, `"${s.nome}"`, `"${m}"`, b, nota.toFixed(2), pct + "%"]);
+      } else {
+        linhas.push([cod, aluno, `"${s.nome}"`, `"${m}"`, b, "N/A (Ausente)", "0.00%"]);
+      }
+    });
+  });
+
+  let csvContent = "data:text/csv;charset=utf-8,\uFEFF" + linhas.map(e => e.join(";")).join("\n");
+  let encodedUri = encodeURI(csvContent);
+  let link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "relatorio_unificado_notas_simulados.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 // ===================== SISTEMA DE SIMULADOS =====================
 function getSimulados(){ return JSON.parse(localStorage.getItem("simulados")||"[]"); }
 function salvarSimuladosStorage(s){ localStorage.setItem("simulados",JSON.stringify(s)); }
@@ -622,7 +1115,8 @@ function adicionarQuestaoSimulado(){
     colunaB: ["", ""],
     correta: 0,
     valor: 1.0,
-    imagemUrl: ""
+    imagemUrl: "",
+    justificativa: "" // FUNCIONALIDADE 2: Justificativa para Gabarito do Professor
   });
   renderQuestoesSimuladoEditor();
 }
@@ -679,6 +1173,9 @@ function renderQuestoesSimuladoEditor(){
       html += `<button class="btn-sm" onclick="addLinhaColuna(${i})">➕ Adicionar Par de Coluna</button>`;
     }
 
+    // FUNCIONALIDADE 2: Campo de Justificativa/Comentário para o Gabarito
+    html += `<textarea placeholder="Justificativa / Comentário da Resposta Correta (Uso exclusivo do Gabarito do Professor)" oninput="simuladoQuestoesData[${i}].justificativa=this.value" style="margin-top:6px; background:#f0f8ff;">${q.justificativa||""}</textarea>`;
+
     html += `<button class="btn-sm btn-danger" onclick="removerQuestaoSimulado(${i})" style="margin-top:8px;">🗑 Remover Questão</button></div>`;
   });
 
@@ -722,7 +1219,6 @@ function salvarSimulado(){
   let simulados = getSimulados();
 
   if(simuladoEmEdicaoId){
-    // ATUALIZA O SIMULADO EXISTENTE (SEM DUPLICAR OU APAGAR)
     let index = simulados.findIndex(s => s.id === simuladoEmEdicaoId);
     if(index !== -1){
       simulados[index] = {
@@ -734,7 +1230,6 @@ function salvarSimulado(){
       alert("Simulado atualizado com sucesso!");
     }
   } else {
-    // CRIA UM NOVO SIMULADO
     let id = Date.now().toString();
     simulados.push({
       id, nome, materia, bimestre, data, descricao,
@@ -745,6 +1240,7 @@ function salvarSimulado(){
   }
 
   salvarSimuladosStorage(simulados);
+  sincronizarSimuladoComCalendario(nome, data, materia, bimestre); // FUNCIONALIDADE 7: Sincronização automática
   limparFormularioSimulado();
   loadSimulados();
 }
@@ -775,7 +1271,8 @@ function loadSimulados(){
       <p>📚 ${s.materia} | 📅 ${s.data||"Sem data"} | Bimestre ${s.bimestre}º | Total: <b>${(s.valorTotal||0).toFixed(2)} pts</b></p>
       <p>${s.descricao||""}</p>
       <p>${s.questoes.length} questão(ões)</p>
-      <button class="btn-sm" onclick="imprimirSimulado('${s.id}')">🖨️ Imprimir Simulado</button>
+      <button class="btn-sm" onclick="imprimirSimulado('${s.id}')">🖨️ Imprimir Simulado (com Folha de Respostas)</button>
+      <button class="btn-sm btn-success" onclick="imprimirGabaritoProfessor('${s.id}')">🔑 Gabarito do Professor</button>
       <button class="btn-sm" onclick="editarSimulado('${s.id}')">✏️ Editar</button>
       <button class="btn-sm btn-danger" onclick="excluirSimulado('${s.id}')">🗑 Excluir</button>
     </div>`;
@@ -809,6 +1306,7 @@ function editarSimulado(id){
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// FUNCIONALIDADE 3: IMPRESSÃO DO SIMULADO + FOLHA DE RESPOSTAS DESTACÁVEL
 function imprimirSimulado(id){
   let s = getSimulados().find(x=>x.id===id);
   if(!s) return;
@@ -873,6 +1371,69 @@ function imprimirSimulado(id){
     }
 
     html += `</div>`;
+  });
+
+  // FOLHA DE RESPOSTAS DESTACÁVEL NO FINAL
+  html += `
+    <div class="folha-resposta">
+      <div style="text-align:center; font-weight:bold; margin-bottom:10px;">
+        ✂️ ------------------ DESTAGUE AQUI - FOLHA DE RESPOSTAS OFICIAL ------------------ ✂️
+      </div>
+      <h4>FOLHA DE RESPOSTAS - ${s.nome.toUpperCase()}</h4>
+      <p>Aluno(a): __________________________________________ Código: [ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; ]</p>
+      <div class="grid-gabarito">
+  `;
+
+  s.questoes.forEach((q, i) => {
+    html += `<div class="item-gabarito"><span><b>Q${i+1}</b></span><div class="bolinhas">`;
+    if(q.tipo === "multipla_4"){
+      html += `<span class="bolinha">A</span><span class="bolinha">B</span><span class="bolinha">C</span><span class="bolinha">D</span>`;
+    } else if(q.tipo === "multipla_5"){
+      html += `<span class="bolinha">A</span><span class="bolinha">B</span><span class="bolinha">C</span><span class="bolinha">D</span><span class="bolinha">E</span>`;
+    } else if(q.tipo === "vf"){
+      html += `<span class="bolinha">V</span><span class="bolinha">F</span>`;
+    } else {
+      html += `[ &nbsp; Associado &nbsp; ]`;
+    }
+    html += `</div></div>`;
+  });
+
+  html += `</div></div>`;
+
+  areaImp.innerHTML = html;
+  window.print();
+}
+
+// FUNCIONALIDADE 2: IMPRESSÃO ISOLADA DO GABARITO DO PROFESSOR COM JUSTIFICATIVAS
+function imprimirGabaritoProfessor(id){
+  let s = getSimulados().find(x=>x.id===id);
+  if(!s) return;
+
+  let areaImp = document.getElementById("areaImpressao");
+  let html = `
+    <div class="cabecalho-impressao">
+      <h2>🔒 USO EXCLUSIVO DO PROFESSOR / COORDENAÇÃO</h2>
+      <h3>GABARITO OFICIAL E COMENTADO: ${s.nome.toUpperCase()}</h3>
+      <p>Disciplina: ${s.materia} | Bimestre: ${s.bimestre}º | Data: ${s.data||"N/A"}</p>
+    </div>
+    <hr style="border-color:#000; margin-bottom:20px;">
+  `;
+
+  s.questoes.forEach((q, i) => {
+    let respTexto = "";
+    if(q.tipo.startsWith("multipla")){
+      respTexto = `Opção ${String.fromCharCode(65 + parseInt(q.correta))}: ${q.alternativas[q.correta]||""}`;
+    } else if(q.tipo === "vf"){
+      respTexto = q.correta === 0 ? "Verdadeiro (V)" : "Falso (F)";
+    } else if(q.tipo === "colunas"){
+      respTexto = "Correspondência exata das colunas cadastradas.";
+    }
+
+    html += `<div class="questao-print" style="border-bottom:1px solid #ccc; padding-bottom:10px;">
+      <p><b>Questão ${i+1}</b> (${(q.valor||0).toFixed(2)} pt) - ${q.enunciado}</p>
+      <p style="color:green; font-weight:bold;">✅ Resposta Correta: ${respTexto}</p>
+      <p><b>💬 Justificativa / Comentário:</b> ${q.justificativa && q.justificativa.trim() !== "" ? q.justificativa : "Sem justificativa cadastrada."}</p>
+    </div>`;
   });
 
   areaImp.innerHTML = html;
@@ -960,20 +1521,28 @@ function calcularELancarSimulado(){
   let s = getSimulados().find(x=>x.id===simId);
   if(!s) return;
 
+  let respostasSalvar = [];
   let pontosObtidos = 0;
+
   s.questoes.forEach((q, i) => {
     let el = document.getElementById(`resp_aluno_${i}`);
-    if(el && el.value !== ""){
+    let respVal = el ? el.value : "";
+    let acertou = false;
+
+    if(respVal !== ""){
       if(q.tipo.startsWith("multipla") || q.tipo === "vf"){
-        if(parseInt(el.value) === parseInt(q.correta)){
+        if(parseInt(respVal) === parseInt(q.correta)){
           pontosObtidos += (parseFloat(q.valor)||0);
+          acertou = true;
         }
       } else if(q.tipo === "colunas"){
-        if(el.value === "correto"){
+        if(respVal === "correto"){
           pontosObtidos += (parseFloat(q.valor)||0);
+          acertou = true;
         }
       }
     }
+    respostasSalvar.push({ questaoIndex: i, resposta: respVal, acertou });
   });
 
   let notaFinalCalc = parseFloat(pontosObtidos.toFixed(2));
@@ -1002,8 +1571,365 @@ function calcularELancarSimulado(){
 
   localStorage.setItem("boletim_"+_alunoEncontradoLancamento, JSON.stringify(d));
 
+  // FUNCIONALIDADE 4: Salva registro detalhado das respostas para estatísticas por questão
+  let historicoRespostas = JSON.parse(localStorage.getItem("respostas_simulados") || "{}");
+  if(!historicoRespostas[simId]) historicoRespostas[simId] = {};
+  historicoRespostas[simId][_alunoEncontradoLancamento] = respostasSalvar;
+  localStorage.setItem("respostas_simulados", JSON.stringify(historicoRespostas));
+
   alert(`Correção Concluída!\nAluno: ${_alunoEncontradoLancamento}\nNota em ${m} (${b}º Bimestre): ${notaFinalCalc} / ${s.valorTotal.toFixed(2)} pts`);
   resetFormLancamento();
+}
+
+// FUNCIONALIDADE 4: ANÁLISE PEDAGÓGICA POR QUESTÃO
+function prepareTabAnaliseQuestoes(){
+  let simulados = getSimulados();
+  let sel = document.getElementById("analiseSimuladoSelect");
+  sel.innerHTML = '<option value="">-- Selecione o Simulado para Análise --</option>';
+  simulados.forEach(s => {
+    sel.innerHTML += `<option value="${s.id}">${s.nome} (${s.materia})</option>`;
+  });
+  resultadoAnaliseQuestoes.innerHTML = "";
+}
+
+function gerarAnaliseQuestoes(){
+  let simId = analiseSimuladoSelect.value;
+  if(!simId){ resultadoAnaliseQuestoes.innerHTML = ""; return; }
+
+  let s = getSimulados().find(x=>x.id===simId);
+  let historicoRespostas = JSON.parse(localStorage.getItem("respostas_simulados") || "{}")[simId] || {};
+  let totalAlunosRespondentes = Object.keys(historicoRespostas).length;
+
+  if(totalAlunosRespondentes === 0){
+    resultadoAnaliseQuestoes.innerHTML = "<div class='info-box'>Nenhuma resposta registrada para este simulado até o momento.</div>";
+    return;
+  }
+
+  let stats = s.questoes.map(() => ({ acertos: 0, erros: 0 }));
+
+  Object.values(historicoRespostas).forEach(respostasAluno => {
+    respostasAluno.forEach(r => {
+      if(r.acertou) stats[r.questaoIndex].acertos++;
+      else stats[r.questaoIndex].erros++;
+    });
+  });
+
+  let html = `<div class="info-box">Total de Alunos que Realizaram o Simulado: <b>${totalAlunosRespondentes}</b></div>`;
+  html += "<table><tr><th>Questão</th><th>Enunciado</th><th>Acertos</th><th>Erros</th><th>% de Acerto</th><th>Diagnóstico Pedagógico</th></tr>";
+
+  stats.forEach((st, i) => {
+    let pct = ((st.acertos / totalAlunosRespondentes) * 100).toFixed(1);
+    let diagnostico = pct < 50 
+      ? "<span style='color:#ff4d4d; font-weight:bold;'>⚠️ Baixo Desempenho (Revisão Necessária)</span>" 
+      : "<span style='color:#0f0; font-weight:bold;'>✅ Aprendizagem Consolidada</span>";
+
+    html += `<tr>
+      <td><b>Q${i+1}</b></td>
+      <td style="text-align:left; font-size:12px;">${s.questoes[i].enunciado.substring(0, 50)}...</td>
+      <td style="color:#0f0; font-weight:bold;">${st.acertos}</td>
+      <td style="color:#ff4d4d; font-weight:bold;">${st.erros}</td>
+      <td><b>${pct}%</b></td>
+      <td>${diagnostico}</td>
+    </tr>`;
+  });
+
+  html += "</table>";
+  resultadoAnaliseQuestoes.innerHTML = html;
+}
+
+// ===================== FUNCIONALIDADE 5: MÓDULO DE PLANO DE AULA =====================
+function getPlanosAula(){ return JSON.parse(localStorage.getItem("planos_aula") || "[]"); }
+function salvarPlanosAulaStorage(p){ localStorage.setItem("planos_aula", JSON.stringify(p)); }
+
+function salvarPlanoAula(statusDesejado){
+  let tema = planoTema.value.trim();
+  let disciplina = planoDisciplina.value;
+  let turma = planoTurma.value.trim();
+  let inicio = planoDataInicio.value;
+  let fim = planoDataFim.value;
+  let objetivos = planoObjetivos.value.trim();
+  let etapas = planoEtapas.value.trim();
+
+  if(!tema || !disciplina || !turma || !objetivos || !etapas){
+    alert("Preencha os campos obrigatórios (*): Tema, Disciplina, Turma, Objetivos e Etapas!");
+    return;
+  }
+
+  // Controle de Permissão: Apenas Professor ou Admin altera/cria se publicado
+  if(isCoord && statusDesejado === 'PUBLICADO'){
+    alert("A Coordenação pode visualizar e comentar rascunhos, mas a publicação final pertence ao Professor!");
+    return;
+  }
+
+  let planos = getPlanosAula();
+
+  if(planoEmEdicaoId){
+    let idx = planos.findIndex(p => p.id === planoEmEdicaoId);
+    if(idx !== -1){
+      planos[idx] = {
+        ...planos[idx],
+        tema, disciplina, turma, inicio, fim, objetivos, etapas,
+        materiais: planoMateriais.value,
+        tarefa: planoTarefa.value,
+        obs: planoObs.value,
+        status: statusDesejado,
+        autor: currentUser,
+        updatedAt: new Date().toLocaleDateString()
+      };
+      alert("Plano de aula atualizado com sucesso!");
+    }
+  } else {
+    planos.push({
+      id: Date.now().toString(),
+      tema, disciplina, turma, inicio, fim, objetivos, etapas,
+      materiais: planoMateriais.value,
+      tarefa: planoTarefa.value,
+      obs: planoObs.value,
+      status: statusDesejado,
+      autor: currentUser,
+      createdAt: new Date().toLocaleDateString()
+    });
+    alert("Plano de aula salvo com sucesso!");
+  }
+
+  salvarPlanosAulaStorage(planos);
+  limparFormPlano();
+  loadPlanosAula();
+}
+
+function limparFormPlano(){
+  planoEmEdicaoId = null;
+  planoTema.value = "";
+  planoDisciplina.value = "";
+  planoTurma.value = "";
+  planoDataInicio.value = "";
+  planoDataFim.value = "";
+  planoObjetivos.value = "";
+  planoEtapas.value = "";
+  planoMateriais.value = "";
+  planoTarefa.value = "";
+  planoObs.value = "";
+  planoFormTitulo.innerText = "📂 Módulo de Plano de Aula";
+  btnCancelarPlano.classList.add("hidden");
+}
+
+function loadPlanosAula(){
+  let planos = getPlanosAula();
+  let html = "";
+
+  planos.forEach(p => {
+    let corStatus = p.status === 'PUBLICADO' ? '#0f0' : 'orange';
+    html += `<div class="prova-card">
+      <div style="display:flex; justify-content:space-between;">
+        <h4>${p.tema} (${p.disciplina} - Turma: ${p.turma})</h4>
+        <span style="color:${corStatus}; font-weight:bold;">[${p.status}]</span>
+      </div>
+      <p><b>Período:</b> ${p.inicio||"N/A"} até ${p.fim||"N/A"} | <b>Autor:</b> ${p.autor}</p>
+      <p><b>Objetivos:</b> ${p.objetivos}</p>
+      <p><b>Etapas:</b> ${p.etapas}</p>
+      <div style="margin-top:8px;">
+        <button class="btn-sm" onclick="editarPlanoAula('${p.id}')">✏️ Editar</button>
+        <button class="btn-sm" onclick="duplicarPlanoAula('${p.id}')">📋 Duplicar Plano</button>
+        <button class="btn-sm btn-danger" onclick="excluirPlanoAula('${p.id}')">🗑 Excluir</button>
+      </div>
+    </div>`;
+  });
+
+  listaPlanosAula.innerHTML = html || "Nenhum plano de aula cadastrado.";
+}
+
+function editarPlanoAula(id){
+  let p = getPlanosAula().find(x => x.id === id);
+  if(!p) return;
+
+  planoEmEdicaoId = p.id;
+  planoTema.value = p.tema;
+  planoDisciplina.value = p.disciplina;
+  planoTurma.value = p.turma;
+  planoDataInicio.value = p.inicio||"";
+  planoDataFim.value = p.fim||"";
+  planoObjetivos.value = p.objetivos;
+  planoEtapas.value = p.etapas;
+  planoMateriais.value = p.materiais||"";
+  planoTarefa.value = p.tarefa||"";
+  planoObs.value = p.obs||"";
+
+  planoFormTitulo.innerText = "✏️ Editando Plano de Aula: " + p.tema;
+  btnCancelarPlano.classList.remove("hidden");
+}
+
+function duplicarPlanoAula(id){
+  let p = getPlanosAula().find(x => x.id === id);
+  if(!p) return;
+
+  let planos = getPlanosAula();
+  let novoPlano = {
+    ...p,
+    id: Date.now().toString(),
+    tema: p.tema + " (Cópia)",
+    status: "RASCUNHO",
+    autor: currentUser,
+    createdAt: new Date().toLocaleDateString()
+  };
+
+  planos.push(novoPlano);
+  salvarPlanosAulaStorage(planos);
+  loadPlanosAula();
+  alert("Plano duplicado como Rascunho com sucesso!");
+}
+
+function excluirPlanoAula(id){
+  if(!confirm("Deseja excluir este plano de aula?")) return;
+  let planos = getPlanosAula().filter(x => x.id !== id);
+  salvarPlanosAulaStorage(planos);
+  loadPlanosAula();
+}
+
+// ===================== FUNCIONALIDADE 6: MÓDULO DE HORÁRIO E GRADE =====================
+function getGradeHoraria(){ return JSON.parse(localStorage.getItem("grade_horaria") || "[]"); }
+function salvarGradeHorariaStorage(g){ localStorage.setItem("grade_horaria", JSON.stringify(g)); }
+
+function salvarHorarioGrade(){
+  let dia = horarioDia.value;
+  let turma = horarioTurma.value.trim();
+  let disciplina = horarioDisciplina.value;
+  let inicio = horarioInicio.value;
+  let fim = horarioFim.value;
+  let professor = horarioProfessor.value.trim();
+
+  if(!turma || !disciplina || !inicio || !fim || !professor){
+    alert("Preencha todos os campos do horário!");
+    return;
+  }
+
+  if(inicio >= fim){
+    alert("O horário final deve ser maior que o horário inicial!");
+    return;
+  }
+
+  let grade = getGradeHoraria();
+
+  // ALERTA E TRAVA DE CONFLITOS DE HORÁRIO
+  let conflitoProf = grade.find(h => h.dia === dia && h.professor.toLowerCase() === professor.toLowerCase() && ((inicio >= h.inicio && inicio < h.fim) || (fim > h.inicio && fim <= h.fim)));
+  let conflitoTurma = grade.find(h => h.dia === dia && h.turma.toLowerCase() === turma.toLowerCase() && ((inicio >= h.inicio && inicio < h.fim) || (fim > h.inicio && fim <= h.fim)));
+
+  if(conflitoProf){
+    alert(`❌ CONFLITO DE HORÁRIO: O professor ${professor} já possui aula de ${conflitoProf.disciplina} na ${dia} das ${conflitoProf.inicio} às ${conflitoProf.fim}!`);
+    return;
+  }
+
+  if(conflitoTurma){
+    alert(`❌ CONFLITO DE HORÁRIO: A turma ${turma} já possui aula de ${conflitoTurma.disciplina} na ${dia} das ${conflitoTurma.inicio} às ${conflitoTurma.fim}!`);
+    return;
+  }
+
+  grade.push({ id: Date.now().toString(), dia, turma, disciplina, inicio, fim, professor });
+  salvarGradeHorariaStorage(grade);
+  alert("Horário adicionado à grade com sucesso!");
+  loadGradeHoraria();
+}
+
+function loadGradeHoraria(){
+  let grade = getGradeHoraria();
+  let html = "<table><tr><th>Dia</th><th>Horário</th><th>Turma</th><th>Disciplina</th><th>Professor</th><th>Ação</th></tr>";
+
+  grade.sort((a,b) => a.inicio.localeCompare(b.inicio)).forEach(h => {
+    html += `<tr>
+      <td><b>${h.dia}</b></td>
+      <td>${h.inicio} - ${h.fim}</td>
+      <td>${h.turma}</td>
+      <td>${h.disciplina}</td>
+      <td>${h.professor}</td>
+      <td><button class="btn-sm btn-danger" onclick="excluirHorarioGrade('${h.id}')">🗑</button></td>
+    </tr>`;
+  });
+
+  html += "</table>";
+  tabelaGradeHoraria.innerHTML = grade.length ? html : "Nenhum horário cadastrado.";
+}
+
+function excluirHorarioGrade(id){
+  let grade = getGradeHoraria().filter(h => h.id !== id);
+  salvarGradeHorariaStorage(grade);
+  loadGradeHoraria();
+}
+
+// ===================== FUNCIONALIDADE 7: CALENDÁRIO ESCOLAR INTEGRADO =====================
+function getCalendarioEscolar(){ return JSON.parse(localStorage.getItem("calendario_escolar") || "[]"); }
+function salvarCalendarioStorage(c){ localStorage.setItem("calendario_escolar", JSON.stringify(c)); }
+
+function sincronizarSimuladoComCalendario(titulo, data, materia, bimestre){
+  if(!data) return;
+  let calendario = getCalendarioEscolar();
+  let idEvento = "sim_" + titulo.replace(/\s+/g, '_') + "_" + data;
+
+  let idx = calendario.findIndex(c => c.id === idEvento);
+  let eventoData = {
+    id: idEvento,
+    titulo: `📝 SIMULADO: ${titulo} (${materia})`,
+    tipo: "SIMULADO",
+    dataInicio: data,
+    dataFim: data,
+    detalhes: `Bimestre: ${bimestre}º`
+  };
+
+  if(idx !== -1) calendario[idx] = eventoData;
+  else calendario.push(eventoData);
+
+  salvarCalendarioStorage(calendario);
+}
+
+function salvarEventoCalendarioManual(){
+  let titulo = calTitulo.value.trim();
+  let tipo = calTipo.value;
+  let dataInicio = calDataInicio.value;
+  let dataFim = calDataFim.value;
+
+  if(!titulo || !dataInicio){
+    alert("Informe o título e a data de início!");
+    return;
+  }
+
+  let calendario = getCalendarioEscolar();
+  calendario.push({
+    id: Date.now().toString(),
+    titulo, tipo, dataInicio,
+    dataFim: dataFim || dataInicio,
+    detalhes: "Cadastro Manual"
+  });
+
+  salvarCalendarioStorage(calendario);
+  calTitulo.value = "";
+  calDataInicio.value = "";
+  calDataFim.value = "";
+  alert("Evento adicionado ao calendário!");
+  loadCalendarioEscolar();
+}
+
+function loadCalendarioEscolar(){
+  let calendario = getCalendarioEscolar();
+  let html = "<table><tr><th>Tipo</th><th>Título</th><th>Data Início</th><th>Data Fim</th><th>Detalhes</th><th>Ação</th></tr>";
+
+  calendario.sort((a,b) => a.dataInicio.localeCompare(b.dataInicio)).forEach(c => {
+    let tag = c.tipo === "SIMULADO" ? "<b style='color:gold;'>[SIMULADO]</b>" : `<b>[${c.tipo}]</b>`;
+    html += `<tr>
+      <td>${tag}</td>
+      <td style="text-align:left;">${c.titulo}</td>
+      <td>${c.dataInicio}</td>
+      <td>${c.dataFim}</td>
+      <td>${c.detalhes||"-"}</td>
+      <td><button class="btn-sm btn-danger" onclick="excluirEventoCalendario('${c.id}')">🗑</button></td>
+    </tr>`;
+  });
+
+  html += "</table>";
+  listaCalendario.innerHTML = calendario.length ? html : "Nenhum evento registrado no calendário.";
+}
+
+function excluirEventoCalendario(id){
+  let calendario = getCalendarioEscolar().filter(c => c.id !== id);
+  salvarCalendarioStorage(calendario);
+  loadCalendarioEscolar();
 }
 
 // ===================== ALUNO =====================
